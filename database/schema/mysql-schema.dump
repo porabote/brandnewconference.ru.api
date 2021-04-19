@@ -1,0 +1,274 @@
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+DROP TABLE IF EXISTS `acos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `acos` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `root_node` varchar(50) DEFAULT NULL,
+  `alias` varchar(255) DEFAULT NULL,
+  `parent_id` int DEFAULT NULL,
+  `lft` int DEFAULT NULL,
+  `rght` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_acos_lft_rght` (`lft`,`rght`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `aros`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `aros` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `parent_id` int DEFAULT NULL,
+  `model` varchar(255) DEFAULT '',
+  `foreign_key` int unsigned DEFAULT NULL,
+  `alias` varchar(255) DEFAULT '',
+  `lft` int DEFAULT NULL,
+  `rght` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_aros_alias` (`alias`),
+  KEY `idx_aros_lft_rght` (`lft`,`rght`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `aros_acos`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `aros_acos` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `aro_id` int unsigned NOT NULL,
+  `aco_id` int unsigned NOT NULL,
+  `_create` char(2) NOT NULL DEFAULT '0',
+  `_read` char(2) NOT NULL DEFAULT '0',
+  `_update` char(2) NOT NULL DEFAULT '0',
+  `_delete` char(2) NOT NULL DEFAULT '0',
+  PRIMARY KEY (`id`),
+  KEY `idx_aco_id` (`aco_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `contractors`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `contractors` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `inn` varchar(20) DEFAULT NULL,
+  `kpp` varchar(11) DEFAULT NULL,
+  `name` varchar(255) NOT NULL DEFAULT '',
+  `type` enum('self','client','distributor','transport_company') DEFAULT 'client',
+  `record_id` int DEFAULT NULL,
+  `model` enum('Companies','Entrepreneurs','Peoples') DEFAULT NULL,
+  `okpo` tinytext,
+  `companyId` varchar(100) DEFAULT NULL,
+  `date_created` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `guid_schneider` varchar(100) DEFAULT NULL,
+  `credinform_guid` tinytext,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `departments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `departments` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL COMMENT 'Название',
+  `text` text COMMENT 'Описание',
+  `contractor_id` int NOT NULL COMMENT 'Контрагент',
+  `parent_id` int DEFAULT NULL,
+  `lft` int NOT NULL,
+  `rght` int NOT NULL,
+  `custom_type` int DEFAULT NULL,
+  `level` int DEFAULT NULL,
+  `label` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `docs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `docs` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `city_id` int DEFAULT NULL,
+  `pattern_id` int DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  `summa` decimal(18,2) DEFAULT NULL,
+  `token` varchar(50) DEFAULT NULL,
+  `name` varchar(256) DEFAULT NULL,
+  `number` varchar(50) DEFAULT NULL,
+  `city_name` varchar(100) DEFAULT NULL,
+  `type_alias` varchar(25) DEFAULT NULL,
+  `cache_html` longtext,
+  `cache_data` longtext,
+  `files_paths` text,
+  `date_from` date DEFAULT NULL,
+  `date_to` date DEFAULT NULL,
+  `date_created` datetime DEFAULT NULL,
+  `date_modified` datetime DEFAULT NULL,
+  `guid` varchar(100) DEFAULT NULL,
+  `parent_id` int DEFAULT NULL,
+  `lft` int DEFAULT NULL,
+  `rght` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `files`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `files` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `width` int DEFAULT NULL COMMENT 'Ширина(изобр.)',
+  `height` int DEFAULT NULL COMMENT 'Высота(изобр.)',
+  `size` int DEFAULT NULL COMMENT 'Размер в байтах',
+  `record_id` int DEFAULT NULL COMMENT 'ID модуля',
+  `parent_id` int DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  `date_created` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Дата создания записи',
+  `prefix` varchar(30) DEFAULT NULL COMMENT 'Префикс названия',
+  `path` varchar(255) DEFAULT NULL COMMENT 'Абсолютный путь на сервере ориг. изображения',
+  `uri` varchar(255) DEFAULT NULL COMMENT 'Внешняя ссылка на файл',
+  `basename` varchar(255) DEFAULT NULL COMMENT 'Имя файла с расширением',
+  `ext` varchar(20) DEFAULT NULL COMMENT 'Расширение файла',
+  `mime` varchar(100) DEFAULT NULL COMMENT 'MIme тип',
+  `title` varchar(255) DEFAULT NULL COMMENT 'Заголовок',
+  `dscr` varchar(256) DEFAULT NULL COMMENT 'Описание',
+  `model_alias` varchar(50) DEFAULT NULL COMMENT 'Алиас модуля',
+  `plugin` varchar(50) DEFAULT NULL,
+  `label` varchar(40) DEFAULT NULL COMMENT 'Особая метка (example cover img)',
+  `token` varchar(42) DEFAULT NULL,
+  `main` enum('none','single','multi') DEFAULT 'none' COMMENT 'Является ли фото главным в группе',
+  `flag` enum('on','off','delete') NOT NULL DEFAULT 'on' COMMENT 'Статус',
+  `data_s_path` varchar(255) DEFAULT NULL COMMENT 'ID модуля',
+  `data_json` text,
+  PRIMARY KEY (`id`),
+  KEY `flag` (`record_id`,`model_alias`,`label`,`main`,`flag`),
+  KEY `token` (`token`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `migrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `migrations` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `migration` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `batch` int NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `password_resets`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `password_resets` (
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `token` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  KEY `password_resets_email_index` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `posts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `posts` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `userdata_id` int DEFAULT NULL,
+  `contractor_id` int DEFAULT NULL,
+  `department_id` int DEFAULT NULL,
+  `name` varchar(100) NOT NULL COMMENT 'Имя',
+  `last_name` varchar(100) NOT NULL COMMENT 'Фамилия',
+  `middle_name` varchar(100) DEFAULT NULL COMMENT 'Отчество',
+  `initials` varchar(10) DEFAULT NULL,
+  `document` varchar(255) DEFAULT NULL,
+  `serie` varchar(11) DEFAULT NULL COMMENT 'Серия',
+  `number` varchar(11) DEFAULT NULL COMMENT 'Номер',
+  `issued_by` varchar(255) DEFAULT NULL,
+  `adress` varchar(255) DEFAULT NULL COMMENT 'Адрес',
+  `fio_sclon` varchar(255) DEFAULT NULL,
+  `date_created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `branch_code` varchar(10) DEFAULT NULL,
+  `gender` enum('no_set','male','female') DEFAULT 'no_set',
+  `flag` enum('client','employe') DEFAULT 'client',
+  `date_birth` date DEFAULT NULL COMMENT 'Дата рождения',
+  `date_get` date DEFAULT NULL,
+  `comment` text,
+  `datas` text,
+  `data_s` text,
+  `fio_declension` varchar(100) DEFAULT NULL,
+  `email` varchar(100) DEFAULT NULL,
+  `status` enum('active','fired','delete') DEFAULT NULL,
+  `phone_number` varchar(50) DEFAULT NULL,
+  `post_name` varchar(100) DEFAULT NULL,
+  `full_name` varchar(150) DEFAULT NULL,
+  `short_name` varchar(100) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=MyISAM DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `reports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reports` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `type_id` int DEFAULT NULL,
+  `object_id` int DEFAULT NULL,
+  `date_created` timestamp NULL DEFAULT NULL,
+  `date_period` date DEFAULT NULL,
+  `comment` text,
+  `department_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `roles`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `roles` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(100) CHARACTER SET cp1251 COLLATE cp1251_general_ci NOT NULL DEFAULT '',
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `settings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `settings` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `plugin` varchar(50) NOT NULL DEFAULT 'App' COMMENT 'Plugin',
+  `className` varchar(50) NOT NULL DEFAULT '' COMMENT 'Название класса',
+  `mysqldump` mediumtext,
+  `title` varchar(100) DEFAULT NULL COMMENT 'Описание',
+  `settings` text,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime DEFAULT NULL,
+  `flag` enum('visible','hide') DEFAULT 'visible',
+  `type` enum('main','custom') DEFAULT NULL,
+  `user_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `users`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `users` (
+  `id` int unsigned NOT NULL AUTO_INCREMENT,
+  `username` varchar(50) NOT NULL DEFAULT '' COMMENT 'Логин',
+  `person_id` int DEFAULT NULL,
+  `password` varchar(255) DEFAULT NULL,
+  `created` datetime DEFAULT NULL,
+  `modified` datetime NOT NULL,
+  `name` varchar(30) DEFAULT NULL,
+  `last_name` varchar(30) NOT NULL,
+  `middle_name` varchar(30) DEFAULT NULL,
+  `token` varchar(255) DEFAULT NULL,
+  `role_id` int DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `id` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
