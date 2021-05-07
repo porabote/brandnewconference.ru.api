@@ -13,16 +13,29 @@ class UsersController extends Controller
 
     private $authData = [];
 
+    function check(Request $request)
+    {
+        $token = str_replace('JWT ', '', $request->header('Authorization'));
+
+        return response()->json([
+            'data' => [
+                'account_alias' => 'porabote',
+                'token' => $token
+            ],
+            'meta' => []
+        ]);
+    }
+
     function login(Request $request)
     {
         try {
-            //$this->authData = $request->all()['data'];
-            $this->authData = [
-                'username' => 'maksimov_den@mail.ru',
-                'password' => 'z7893727'
-            ];
+            $this->authData = $request->all()['data'];
+//            $this->authData = [
+//                'username' => 'maksimov_den@mail.ru',
+//                'password' => 'z7893727'
+//            ];
             $this->_login();
-        } catch (\App\Exceptions\AuthException $exception) {
+        } catch (\Porabote\Exceptions\AuthException $exception) {
             echo $exception->jsonApiError();
         }
 
@@ -31,22 +44,26 @@ class UsersController extends Controller
     function _login()
     {
         $user = $this->_identify();
-//dd($user);
-        JWT::setToken($user);
-        //if ($user) $this->json(JWT::setToken($user));
+
+        if ($user) {
+            return response()->json([
+                'data' => JWT::setToken($user),
+                'meta' => []
+            ]);
+        }
     }
 
     function _identify()
     {
-        if(!$this->authData) throw new \App\Exceptions\AuthException('Auth data is empty');
+        if(!$this->authData) throw new \Porabote\Exceptions\AuthException('Auth data is empty');
 
         if(!isset($this->authData['username']) || !isset($this->authData['password'])) {
-            throw new \App\Exceptions\AuthException('Error of identify: some request data wasn`t recieved');
+            throw new \Porabote\Exceptions\AuthException('Error of identify: some request data wasn`t recieved');
         }
 
         $user = Users::where('username', $this->authData['username'])->first();
 
-        if(!$user) throw new \App\Exceptions\AuthException('Error of identify: User not found');
+        if(!$user) throw new \Porabote\Exceptions\AuthException('Error of identify: User not found');
 
         return $this->_authentificate($user);
     }
@@ -54,7 +71,7 @@ class UsersController extends Controller
     function _authentificate($user)
     {
         if (!password_verify($this->authData['password'], $user->password)) {
-            throw new \App\Exceptions\AuthException('Authentificate error: the password is incorrect');
+            throw new \Porabote\Exceptions\AuthException('Authentificate error: the password is incorrect');
         }
 
         $userData = $user->getAttributes();
