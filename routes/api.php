@@ -29,11 +29,11 @@ Route::get('/persons/get/', [ PersonsController::class, 'get' ]);
 Route::get('/reports/get/', [ ReportsController::class, 'get' ]);
 Route::get('posts', [ PostsController::class, 'index' ]);
 Route::get('posts/{post}', [ PostsController::class, 'show' ]);
-Route::get('payments-sets/get/', [ PaymentsSetsController::class, 'get' ]);
+//Route::get('payments-sets/get/', [ PaymentsSetsController::class, 'get' ]);
 Route::post('posts', 'PostsController@store');
 Route::put('posts/{post}', 'PostsController@update');
 Route::delete('posts/{post}', 'PostsController@delete');
-Route::post('users/check/', [ UsersController::class, 'check' ]);
-Route::post('users/login/', [ UsersController::class, 'login' ]);
-Route::get('users/registration', [ UsersController::class, 'registration' ]);
+
+
+Route::post('payments-sets/get/', [ PaymentsSetsController::class, 'get' ]);
 ?>
