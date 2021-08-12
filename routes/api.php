@@ -24,16 +24,19 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 });
 
+Route::get('/dicts/get/', [ App\Http\Controllers\DictsController::class, 'get' ]);
 Route::get('/departments/get/', [ DepartmentsController::class, 'get' ]);
 Route::get('/persons/get/', [ PersonsController::class, 'get' ]);
-Route::get('/reports/get/', [ ReportsController::class, 'get' ]);
 Route::get('posts', [ PostsController::class, 'index' ]);
 Route::get('posts/{post}', [ PostsController::class, 'show' ]);
-//Route::get('payments-sets/get/', [ PaymentsSetsController::class, 'get' ]);
 Route::post('posts', 'PostsController@store');
 Route::put('posts/{post}', 'PostsController@update');
 Route::delete('posts/{post}', 'PostsController@delete');
-
-
+Route::get('menus/{post}', [ App\Http\Controllers\MenusController::class, 'get' ]);
 Route::post('payments-sets/get/', [ PaymentsSetsController::class, 'get' ]);
+Route::get('users/reload', [ App\Http\Controllers\UsersController::class, 'reload' ]);
+Route::get('/types/get', [ App\Http\Controllers\TypesController::class, 'get' ]);
+Route::get('/reports/get/', [ ReportsController::class, 'get' ]);
+Route::get('/reports/get/{id}', [ ReportsController::class, 'get' ]);
+Route::post('/files/upload/', [ App\Http\Controllers\FilesController::class, 'upload' ]);
 ?>

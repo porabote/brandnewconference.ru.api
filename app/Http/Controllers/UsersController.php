@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Users;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Porabote\Components\Auth\AuthException;
 use Porabote\Components\Auth\JWT;
@@ -88,5 +89,10 @@ class UsersController extends Controller
 //        $user->name = 'Дмитрий';
 //        $user->last_name = 'Разумихин';
 //        $user->save();
+    }
+
+    function reload() {
+        $users = DB::connection('solikamsk_mysql')->table('users')->get();
+        dd($users);
     }
 }

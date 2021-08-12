@@ -53,3 +53,13 @@ $response = tap($kernel->handle(
 ))->send();
 
 $kernel->terminate($request, $response);
+
+function debug($data)
+{
+    echo '<pre>';
+    $bt = debug_backtrace();
+    $caller = array_shift($bt);
+    echo ($caller['file'] . ' on line ' . $caller['line'] . PHP_EOL);
+    print_r($data);
+    echo '</pre>';
+}
