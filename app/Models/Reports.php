@@ -12,7 +12,7 @@ class Reports extends Model
 
     public function files()
     {
-        return $this->hasMany(File::class, 'record_id', 'id' );
+        return $this->hasMany(File::class, 'record_id', 'id' )->where('model_alias','=', 'reports');;
     }
 
     public function departments()

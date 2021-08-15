@@ -38,5 +38,5 @@ Route::get('users/reload', [ App\Http\Controllers\UsersController::class, 'reloa
 Route::get('/types/get', [ App\Http\Controllers\TypesController::class, 'get' ]);
 Route::get('/reports/get/', [ ReportsController::class, 'get' ]);
 Route::get('/reports/get/{id}', [ ReportsController::class, 'get' ]);
-Route::post('/files/upload/', [ App\Http\Controllers\FilesController::class, 'upload' ]);
+Route::post('/reports/uploadReportFile/', [ ReportsController::class, 'uploadReportFile' ]);
 ?>
