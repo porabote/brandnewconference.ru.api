@@ -18,13 +18,8 @@ class DictsController extends Controller
 
             $dictData = DB::connection('dicts_mysql')->table($assoc_table)->get();
 
-//            $dict->$assoc_table = [
-//                'data' => []
-//            ];
             foreach ($dictData as $subDict) {
-                //$item = new \App\Http\Responses\RestDataItem($subDict, $dict->attributes->assoc_table, '');
                 $dict->list[$subDict->id] = $subDict;
-                //array_push($dict->$assoc_table['data'], $item);
             }
 
         }

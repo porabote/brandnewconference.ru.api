@@ -7,7 +7,7 @@ use App\Models\Users;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Porabote\Components\Auth\AuthException;
-use Porabote\Components\Auth\JWT;
+use Porabote\Auth\JWT;
 
 class UsersController extends Controller
 {
@@ -95,4 +95,34 @@ class UsersController extends Controller
         $users = DB::connection('solikamsk_mysql')->table('users')->get();
         dd($users);
     }
+
+    function setToken(Request $request)
+    {
+
+        $data = $request->all();
+        parse_str($data['data'], $user);
+
+        $token = $this->_setToken($user['data']);
+
+        return response()->json($token);
+
+    }
+
+    function _setToken($userDataExt)
+    {
+        $userData = [
+            'id' => null,
+            'username' => null,
+            'name' => null,
+            'last_name' => null,
+            'post_id' => null,
+            'account_alias' => null,
+            'avatar' => null
+        ];
+
+        $data = array_intersect_key($userDataExt, $userData);
+
+        return JWT::setToken($data);
+    }
+
 }

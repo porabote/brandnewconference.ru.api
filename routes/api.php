@@ -38,5 +38,9 @@ Route::get('users/reload', [ App\Http\Controllers\UsersController::class, 'reloa
 Route::get('/types/get', [ App\Http\Controllers\TypesController::class, 'get' ]);
 Route::get('/reports/get/', [ ReportsController::class, 'get' ]);
 Route::get('/reports/get/{id}', [ ReportsController::class, 'get' ]);
-Route::post('/reports/uploadReportFile/', [ ReportsController::class, 'uploadReportFile' ]);
+Route::post('/reports/add/', [ ReportsController::class, 'add' ]);
+Route::post('/files/upload/', [ App\Http\Controllers\FilesController::class, 'upload' ]);
+Route::get('/payments-sets/get/', [ App\Http\Controllers\PaymentsSetsController::class, 'get' ]);
+Route::get('/payments-sets/get/{id}', [ PaymentsSetsController::class, 'get' ]);
+Route::post('/users/setToken/', [ App\Http\Controllers\UsersController::class, 'setToken' ]);
 ?>

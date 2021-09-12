@@ -20,13 +20,14 @@ trait ApiTrait
 
         if(class_exists($className)) {
             $model = new $className();
-            $query = DB::connection($model->getConnectionName())->table(strtolower($this->getModelName()));
+            $query = DB::connection($model->getConnectionName())->table($this->camelToSnake($this->getModelName()));
         } else {
             $query = DB::connection('api_mysql')->table(strtolower($this->getModelName()));
         }
 
         if ($id) {
-            $model = \App\Models\Reports::find($id);
+            $modelAlias = '\App\Models\\' . $this->getModelName();
+            $model = $modelAlias::find($id);
 
             $data = $model;
 
@@ -39,10 +40,10 @@ trait ApiTrait
 
             $this->setWhere($query, $request->query(), $id);
             $this->setWhereIn($query, $request->query());
-            $data = $query->limit(1000)->get();
+            $data = $query->limit(1000)->orderBy('id', 'desc')->get();
 
             $data->map(function ($datum) use($Response) {
-                $item = new RestDataItem( $datum, 'reports', '/report/get/' . $datum->id);
+                $item = new RestDataItem( $datum, strtolower($this->getModelName()), '/' . strtolower($this->getModelName()) . '/get/' . $datum->id);
                 $Response->setData($item);
             });
         }
@@ -54,6 +55,15 @@ trait ApiTrait
         if (!$Response) $Response = [];
 
         return response()->json($Response);
+    }
+
+    function camelToSnake($input) {
+        preg_match_all('!([A-Z][A-Z0-9]*(?=$|[A-Z][a-z0-9])|[A-Za-z][a-z0-9]+)!', $input, $matches);
+        $ret = $matches[0];
+        foreach ($ret as &$match) {
+            $match = $match == strtoupper($match) ? strtolower($match) : lcfirst($match);
+        }
+        return implode('_', $ret);
     }
 
     function getRelationships($query, $model)
@@ -76,11 +86,14 @@ trait ApiTrait
                         );
                     });
                 } else {
-                    $relationships[$relatedModelName] = new RestDataItem(
-                        (object) $model->$relatedModelName->getAttributes(),
-                        $relatedModelName,
-                        '/' . $relatedModelName . '/get'
-                    );
+
+                    if ($model->$relatedModelName) {
+                        $relationships[$relatedModelName] = new RestDataItem(
+                            (object) $model->$relatedModelName->getAttributes(),
+                            $relatedModelName,
+                            '/' . $relatedModelName . '/get'
+                        );
+                    }
                 }
             }
         }

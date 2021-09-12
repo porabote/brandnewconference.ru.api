@@ -31,7 +31,7 @@ class MenusController extends Controller
                              AND node.lft <> 0
                        ) AS depth
                     FROM `menus` AS node
-                    WHERE lft <> 0 ORDER BY lft';
+                    WHERE lft <> 0 AND flag="on" ORDER BY lft';
         $menus = DB::connection('auth_mysql')->select($query);
 
         $output = [];

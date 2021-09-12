@@ -4,17 +4,18 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Models\Reports;
-use App\Models\File;
 use App\Traits\ApiTrait;
 use Porabote\Uploader\Uploader;
-use App\Http\Controllers\History;
+use App\Http\Components\HistoryComponent;
+use App\Models\Menus;
+use App\Models\File;
+use App\Models\History;
 
-class ReportsController extends Controller
+class FilesController extends Controller
 {
     use ApiTrait;
 
-    function uploadReportFile(Request $request)
+    function upload(Request $request)
     {
         $file = Uploader::upload($request->file());
 
@@ -32,27 +33,18 @@ class ReportsController extends Controller
 
         $File->save();
 
+        History::create([
+            'model_alias' => 'reports',
+            'record_id' => $File->record_id,
+            'msg' => 'Загружен файл: ' . $File->basename,
+//            'user_id' => '99',
+//            'user_name' => 111
+        ]);
+
         return response()->json([
             'data' => $file,
             'meta' => []
         ]);
 
-    }
-
-    function add(Request $request)
-    {
-        $data = $request->all();
-
-        $Report = new Reports();
-        foreach ($data as $field => $value) {
-            $Report->$field = $value;
-        }
-
-        $Report->save();
-
-        return response()->json([
-            'data' => $data,
-            'meta' => []
-        ]);
     }
 }
