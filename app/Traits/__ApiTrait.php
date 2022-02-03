@@ -8,19 +8,18 @@ use App\Http\Responses\RestDataItem;
 
 trait ApiTrait
 {
-    private $Response;
     private $modeName;
 
     function get(Request $request, $id = null)
     {
+
         $Response = new \App\Http\Responses\RestResponse($request);
-        $this->Response = new \App\Http\Responses\RestResponse($request);
 
         $className = '\App\Models\\' . $this->getModelName();
 
         if(class_exists($className)) {
             $model = new $className();
-            $query = DB::connection($model->getConnectionName())->table($this->camelToSnake($this->getModelName()));
+            $query = DB::connection($model->getConnectionName())->table($this->camelToSnake($model->getTable()));
         } else {
             $query = DB::connection('api_mysql')->table(strtolower($this->getModelName()));
         }
@@ -31,7 +30,7 @@ trait ApiTrait
 
             $data = $model;
 
-            $item = new RestDataItem((object) $data->getAttributes(), 'reports', '/report/get');
+            $item = new RestDataItem($data->toArray(), strtolower($this->getModelName()), '/report/get');
 
             $item->setRelationships($this->getRelationships($request->query(), $model));
             $Response->data = $item;
@@ -40,12 +39,17 @@ trait ApiTrait
 
             $this->setWhere($query, $request->query(), $id);
             $this->setWhereIn($query, $request->query());
-            $data = $query->limit(1000)->orderBy('id', 'desc')->get();
+            $data = $query->limit(1000)->orderBy('id', 'desc')->get()->toArray();
 
-            $data->map(function ($datum) use($Response) {
-                $item = new RestDataItem( $datum, strtolower($this->getModelName()), '/' . strtolower($this->getModelName()) . '/get/' . $datum->id);
+            foreach ($data as $datum) {
+                $item = new RestDataItem( (array) $datum, strtolower($this->getModelName()), '/' . strtolower($this->getModelName()) . '/get/' . $datum->id);
+
+                $modelAlias = '\App\Models\\' . $this->getModelName();
+                $model = $modelAlias::find($datum->id);
+                $item->setRelationships($this->getRelationships($request->query(), $model));
+
                 $Response->setData($item);
-            });
+            };
         }
 
         if(method_exists($this, 'getHandle')) {
@@ -55,6 +59,16 @@ trait ApiTrait
         if (!$Response) $Response = [];
 
         return response()->json($Response);
+    }
+
+    function _get()
+    {
+
+    }
+
+    function _getAll()
+    {
+
     }
 
     function camelToSnake($input) {
@@ -80,7 +94,7 @@ trait ApiTrait
                     $relationships[$relatedModelName]['data'] = $model->$relatedModelName->map(function ($data) use ($relatedModelName) {
 
                         return new RestDataItem(
-                            (object) $data->getAttributes(),
+                            $data->toArray(),
                             $relatedModelName,
                             '/' . $relatedModelName . '/get'
                         );
@@ -89,7 +103,7 @@ trait ApiTrait
 
                     if ($model->$relatedModelName) {
                         $relationships[$relatedModelName] = new RestDataItem(
-                            (object) $model->$relatedModelName->getAttributes(),
+                            $model->$relatedModelName->toArray(),
                             $relatedModelName,
                             '/' . $relatedModelName . '/get'
                         );
@@ -101,10 +115,41 @@ trait ApiTrait
         return $relationships;
     }
 
+    function getRelationship($id, $assocAlias)
+    {
+        $modelAlias = '\App\Models\\' . $this->getModelName();
+
+        if (isset($this->request->query()['include'])) {
+
+            $record = $modelAlias::with($this->request->query()['include']);
+            $record = $record->find($id)->toArray();
+        } else {
+            $record = $modelAlias::find($id)->toArray();
+        }
+
+        $Response = new \App\Http\Responses\RestResponse($this->request);
+
+        foreach ($record[$assocAlias] as $item) {
+            $link = '/api/' . strtolower($this->getModelName()) . '/' . $item['id'] . '/relationships/comments?' . http_build_query($this->request->query());
+            $item = new RestDataItem($item, $assocAlias, $link);
+            $Response->setData($item);
+        }
+
+        return response()->json($Response);
+    }
+
     function getModelName()
     {
         preg_match('/([a-z]+)Controller$/i', get_class(), $modelName);
         return $modelName[1];
+    }
+
+    function delete($id)
+    {
+        $modelAlias = '\App\Models\\' . $this->getModelName();
+        $modelAlias::destroy($id);
+
+        return response()->json([]);
     }
 
     function setWhere($query, $filterData, $id = null)

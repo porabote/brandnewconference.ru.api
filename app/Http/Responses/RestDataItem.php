@@ -11,11 +11,11 @@ class RestDataItem {
 
     public function __construct($data, $type, $url)
     {
-        $this->id = $data->id;
+        $this->id = $data['id'];
         $this->type = $type;
         $this->attributes = $data;
         $this->relationships = [];
-        $this->links['self'] = $url . '/' . $data->id;
+        $this->links['self'] = $url . '/' . $data['id'];
     }
 
     function setRelationships($relationships)

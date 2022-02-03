@@ -4,10 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Traits\ApiTrait;
+use Porabote\FullRestApi\Server\ApiTrait;
 use Porabote\Uploader\Uploader;
-use App\Http\Components\HistoryComponent;
-use App\Models\Menus;
 use App\Models\File;
 use App\Models\History;
 
@@ -17,34 +15,69 @@ class FilesController extends Controller
 
     function upload(Request $request)
     {
-        $file = Uploader::upload($request->file());
+        $data = $request->all();
 
-        foreach ($request->all() as $field => $value) {
-            if (is_string($value)) {
-                $file[$field] = $value;
+        if (isset($data['files'])) {
+
+            $files = [];
+
+            foreach ($data['files'] as $item) {
+                $File = $item['file'];
+                unset($item['file']);
+                $files[] = $this->uploadFile($File, $item);
             }
+
+            return response()->json([
+                'data' => $files,
+                'meta' => []
+            ]);
+
         }
 
-        $File = new File($file);
+    }
 
-        foreach ($file as $field => $value) {
-            $File->$field = $value;
-        }
+    function uploadFile($file, $fileInfo)
+    {
+        $file = Uploader::upload($file);
 
-        $File->save();
+        $file = array_merge($file, $fileInfo);
+
+        File::create($file);
 
         History::create([
             'model_alias' => 'reports',
-            'record_id' => $File->record_id,
-            'msg' => 'Загружен файл: ' . $File->basename,
-//            'user_id' => '99',
-//            'user_name' => 111
+            'record_id' => $file['record_id'],
+            'msg' => 'Загружен файл: ' . $file['basename']
         ]);
+
+        return $file;
+    }
+
+    function changeFileInfo(Request $request)
+    {
+        $data = $request->all();
+
+        $file = File::find($data['id']);
+        foreach ($data as $fieldName => $value) {
+            $file->$fieldName = $value;
+        }
+        $file->update();
 
         return response()->json([
             'data' => $file,
             'meta' => []
         ]);
+    }
 
+    function markToDelete($request, $id)
+    {
+        $file = File::find($id);
+        $file->flag = "to_delete";
+        $file->update();
+
+        return response()->json([
+            'data' => $file,
+            'meta' => []
+        ]);
     }
 }

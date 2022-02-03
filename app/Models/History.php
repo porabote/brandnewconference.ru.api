@@ -1,12 +1,10 @@
 <?php
-
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use App\Observers\AuthObserver;
-use Porabote\Auth\Auth as Auth;
 
 class History extends Model
 {
@@ -14,9 +12,7 @@ class History extends Model
 
     public static function boot() {
         parent::boot();
-
         History::observe(AuthObserver::class);
-        //parent::observe(new AuthObserver);
     }
 
     /**
@@ -28,17 +24,13 @@ class History extends Model
         'created_at' => '',
         'updated_at' => '',
         'flag' => 'on',
-//        'user_id' => '',
-//        'user_name' => ''
+        'user_name' => ''
     ];
 
     protected $fillable = [
         'model_alias',
         'record_id',
-        'msg',
-//        'user_id',
-//        'user_name',
-       // 'flag'
+        'msg'
     ];
 
     public function setCreatedAtAttribute($value)
@@ -49,16 +41,6 @@ class History extends Model
     {
         $this->attributes['updated_at'] = date('Y-m-d H:i:s');
     }
-
-//    public function setUserIdAttribute($value)
-//    {
-//        $this->attributes['user_id'] = Auth::getUser('id');
-//    }
-
-//    public function setUserNameAttribute($value)
-//    {
-//        $this->attributes['user_name'] = Auth::getUser('name');
-//    }
 
     
 }

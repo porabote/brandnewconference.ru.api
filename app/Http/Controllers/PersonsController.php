@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Traits\ApiTrait;
+use Porabote\FullRestApi\Server\ApiTrait;
 
 class PersonsController extends Controller
 {

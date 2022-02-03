@@ -3,14 +3,21 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\Users;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Porabote\Components\Auth\AuthException;
 use Porabote\Auth\JWT;
+use Porabote\Auth\Auth;
+use App\Models\Users;
+use App\Models\AclAcos;
+use App\Models\AclAros;
+use App\Models\AclPermissions;
+use Porabote\FullRestApi\Server\ApiTrait;
 
 class UsersController extends Controller
 {
+
+    use ApiTrait;
 
     private $authData = [];
 
@@ -31,10 +38,7 @@ class UsersController extends Controller
     {
         try {
             $this->authData = $request->all()['data'];
-//            $this->authData = [
-//                'username' => 'maksimov_den@mail.ru',
-//                'password' => 'z7893727'
-//            ];
+
             $this->_login();
         } catch (\Porabote\Exceptions\AuthException $exception) {
             echo $exception->jsonApiError();
@@ -91,14 +95,8 @@ class UsersController extends Controller
 //        $user->save();
     }
 
-    function reload() {
-        $users = DB::connection('solikamsk_mysql')->table('users')->get();
-        dd($users);
-    }
-
     function setToken(Request $request)
     {
-
         $data = $request->all();
         parse_str($data['data'], $user);
 
@@ -117,12 +115,94 @@ class UsersController extends Controller
             'last_name' => null,
             'post_id' => null,
             'account_alias' => null,
-            'avatar' => null
+            'avatar' => null,
+            'api_id' => null,
+            'post_name' => null,
+            'role_id' => null
         ];
 
         $data = array_intersect_key($userDataExt, $userData);
 
         return JWT::setToken($data);
+    }
+
+    function getAclLists($request)
+    {
+        $data = $request->all();
+
+        $aro = AclAros::get()
+            ->where('foreign_key', $data['user_id'])
+            ->where('label', 'User')
+            ->first()
+        ->toArray();
+
+        $acosList = AclAcos::orderBy('name', 'asc')->get();
+        $permissions = collect(AclPermissions::get()
+            ->where('aro_id', $aro['id'])
+        )->keyBy('aco_id');
+
+        return response()->json([
+            'data' => [
+                'acosList' => $acosList,
+                'permissions' => $permissions,
+                'aro' => $aro,
+            ],
+            'meta' => []
+        ]);
+    }
+
+    function setPermission($request)
+    {
+        $user = Users::find(Auth::$user->id)->toArray();
+        if ($user['role_id'] != 1) {
+            return response()->json([
+                'data' => [
+                    'error' => ['Access denied'],
+                ],
+                'meta' => []
+            ]);
+        }
+
+        $data = $request->all();
+
+        if ($data['status']) {
+            $this->addAccess($data['aco_id'], $data['aro_id']);
+        } else {
+            $this->deleteAccess($data['aco_id'], $data['aro_id']);
+        }
+
+    }
+
+    function addAccess($aco_id, $aro_id)
+    {
+        $permission = AclPermissions::get()
+            ->where('aco_id', $aco_id)
+            ->where('aro_id', $aro_id)
+            ->first();
+
+        if (!$permission) {
+            AclPermissions::create([
+                'aco_id' => $aco_id,
+                'aro_id' => $aro_id,
+                '_create' => 1,
+                '_read' => 1,
+                '_update' => 1,
+                '_delete' => 1,
+            ]);
+        }
+    }
+
+    function deleteAccess($aco_id, $aro_id)
+    {
+        $permission = AclPermissions::get()
+            ->where('aco_id', $aco_id)
+            ->where('aro_id', $aro_id)
+            ->first();
+       // $perm = AclPermissions::find($permission['id']);
+
+        if ($permission) {
+            $permission->delete();
+        }
     }
 
 }

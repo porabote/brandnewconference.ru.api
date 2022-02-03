@@ -23,6 +23,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+//        \DB::listen(function($query) {
+//            $sql = $query->sql;
+//            $bindings = $query->bindings;
+//            $executionTime = $query->time;
+//            debug($sql);
+//            // do something with the above. Log it, stream it via pusher, etc
+//        });
     }
 }

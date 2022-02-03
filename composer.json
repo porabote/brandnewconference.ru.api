@@ -13,7 +13,11 @@
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.12",
         "laravel/tinker": "^2.5",
-        "porabote/core": "^1.0"
+        "mpdf/mpdf": "^8.0",
+        "phpmailer/phpmailer": "^6.5",
+        "porabote/core": "^1.0",
+        "twig/intl-extra": "^3.3",
+        "twig/twig": "^3.3"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
