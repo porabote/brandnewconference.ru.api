@@ -15,6 +15,7 @@
         "laravel/tinker": "^2.5",
         "mpdf/mpdf": "^8.0",
         "phpmailer/phpmailer": "^6.5",
+        "phpoffice/phpspreadsheet": "^1.22",
         "porabote/core": "^1.0",
         "twig/intl-extra": "^3.3",
         "twig/twig": "^3.3"

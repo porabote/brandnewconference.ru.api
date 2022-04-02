@@ -28,6 +28,7 @@ class Equipments extends Model
         'platform_id',
         'type_id',
         'engine_hours',
+        'hole_id'
     ];
 
     public static function boot() {
@@ -44,19 +45,21 @@ class Equipments extends Model
 
     public function equipment_accidents()
     {
-        return $this->hasMany(EquipmentAccidents::class, 'equipment_id', 'id' );
+        return $this->hasMany(EquipmentAccidents::class, 'equipment_id', 'id' )
+            ->orderByDesc('id');
     }
 
     public function equipment_repairs()
     {
-        return $this->hasMany(EquipmentsRepairs::class, 'equipment_id', 'id' );
+        return $this->hasMany(EquipmentsRepairs::class, 'equipment_id', 'id' )
+            ->orderByDesc('id');
     }
 
     public function history()
     {
         return $this->hasMany(History::class, 'record_id', 'id' )
             ->where('model_alias', '=', 'equipments')
-            ->orderByDesc('id');;
+            ->orderByDesc('id');
     }
 
     public function comments()
@@ -85,6 +88,11 @@ class Equipments extends Model
     public function object()
     {
         return $this->belongsTo(Objects::class, 'object_id', 'id' );
+    }
+
+    public function hole()
+    {
+        return $this->belongsTo(Objects::class, 'hole_id', 'id' );
     }
 
     public function user()

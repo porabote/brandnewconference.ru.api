@@ -15,12 +15,23 @@ class Objects extends Model
         'address',
         'kind',
         "platform_id",
+        "parent_id"
     ];
 
     public function departments()
     {
         return $this->hasMany(Departments::class, 'department_id', 'id' )
             ->orderBy('name');
+    }
+
+    public function platform()
+    {
+        return $this->belongsTo(Platforms::class, 'platform_id', 'id' );
+    }
+
+    public function parent()
+    {
+        return $this->belongsTo(Objects::class, 'parent_id', 'id' );
     }
 
 }

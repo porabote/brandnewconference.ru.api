@@ -25,7 +25,7 @@ class ReportsController extends Controller
         $report = Reports::create($data);
 
         ObserversController::subscribeByDefaultList([1, 2, 3], $report->id);
-        ObserversController::subscribe($report->user_id, [1, 2, 3], $report->id);
+        ObserversController::_subscribe([$report->user_id], [1, 2, 3], $report->id);
 
         History::create([
             'model_alias' => 'reports',

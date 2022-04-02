@@ -14,7 +14,20 @@ class ObjectsController extends Controller
     {
         $data = $request->all();
 
-        Objects::create($data);
+        if (!isset($data['id'])) {
+            Objects::create($data);
+        } else {
+            $record = Objects::find($data['id']);
+            $dataBefore = $record->getAttributes();
+
+            foreach ($data as $fieldName => $value) {
+                if (array_key_exists($fieldName, $dataBefore)) {
+                    if ($value == "null") $value = NULL;
+                    $record[$fieldName] = $value;
+                }
+            }
+            $record->update();
+        }
 
         return response()->json([
             'data' => $data,

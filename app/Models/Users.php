@@ -11,7 +11,9 @@ class Users extends Model
 {
     use HasFactory, Notifiable;
 
-    public $timestamps = false;
+    const CREATED_AT = 'created';
+    const UPDATED_AT = 'modified';
+    public $timestamps = true;
 
     /**
      * The attributes that are mass assignable.
@@ -19,9 +21,16 @@ class Users extends Model
      * @var array
      */
     protected $fillable = [
+        'username',
+        'people_id',
         'name',
-        'email',
+        'last_name',
+        'confirm',
+        'token',
+        'post_id',
+        'api_id',
         'password',
+        'role_id',
     ];
 
     /**
@@ -43,6 +52,10 @@ class Users extends Model
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+//    protected $casts = [
+//        'created',
+//        'modified'
+//    ];
 
     function __construct(array $attributes = [])
     {

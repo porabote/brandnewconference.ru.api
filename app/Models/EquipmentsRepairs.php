@@ -22,6 +22,7 @@ class EquipmentsRepairs extends Model
         "downtime",
         "desc",
         "desc_short",
+        "doer_id",
     ];
 
     public static function boot() {
@@ -32,6 +33,16 @@ class EquipmentsRepairs extends Model
     public function user()
     {
         return $this->belongsTo(ApiUsers::class, 'user_id', 'id' );
+    }
+
+    public function doer()
+    {
+        return $this->belongsTo(ApiUsers::class, 'doer_id', 'id' );
+    }
+
+    public function spares()
+    {
+        return $this->hasMany(EquipmentsRepairsSpares::class, 'repair_id', 'id' );
     }
 
 }

@@ -34,7 +34,7 @@ class ObserversController extends Controller
         foreach ($observersDefault as $observer) {
 
             foreach ($event_ids as $event_id) {
-                self::_subscribe($observer['user_id'], $event_id, $entity_id);
+                self::__subscribe($observer['user_id'], $event_id, $entity_id);
             }
 
         }
@@ -46,7 +46,7 @@ class ObserversController extends Controller
 
         foreach ($data['user_ids'] as $user) {
             foreach ($data['event_ids'] as $event) {
-                $subscribes = $this->_subscribe($user, $event, $data['entity_id']);
+                $subscribes = self::__subscribe($user, $event, $data['entity_id']);
             }
         }
 
@@ -55,7 +55,17 @@ class ObserversController extends Controller
             'meta' => []
         ]);
     }
-    static function _subscribe($user_id, $event_id, $entity_id)
+
+    static function _subscribe($user_ids, $event_ids, $entity_id)
+    {
+        foreach ($user_ids as $user) {
+            foreach ($event_ids as $event) {
+                $subscribes = self::__subscribe($user, $event, $entity_id);
+            }
+        }
+    }
+
+    static function __subscribe($user_id, $event_id, $entity_id)
     {
         $entity = Observers::where('entity_id', $entity_id)
             ->where('user_id', $user_id)

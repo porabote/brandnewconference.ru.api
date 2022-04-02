@@ -79,10 +79,12 @@ class Message {
         $accounts = [
             'Thyssen' => 'Норильск',
             'Solikamsk' => 'Соликамск',
+            'Kotelnikovo' => 'Котельниково',
         ];
 
         $this->data['platform']['en_alias'] = Auth::$user->account_alias;
         $this->data['platform']['ru_alias'] = $accounts[Auth::$user->account_alias];
+        $this->data['platform']['domain'] = 'https://thyssen24.ru';
         return $this;
     }
 

@@ -30,7 +30,8 @@ class History extends Model
     protected $fillable = [
         'model_alias',
         'record_id',
-        'msg'
+        'msg',
+        'diff',
     ];
 
     public function setCreatedAtAttribute($value)
@@ -42,5 +43,20 @@ class History extends Model
         $this->attributes['updated_at'] = date('Y-m-d H:i:s');
     }
 
+    public static function setDiff($dataBefore, $dataAfter)
+    {
+        $diffArray = [];
+        foreach ($dataAfter as $rowName => $value) {
+            if (array_key_exists($rowName, $dataBefore) && $dataBefore[$rowName] != $value) {
+                $diffArray[$rowName] = [
+                    'before' => $dataBefore[$rowName],
+                    'after' => $value,
+                ];
+            }
+            if (isset($diffArray['updated_at'])) unset($diffArray['updated_at']);
+            if (isset($diffArray['created_at'])) unset($diffArray['created_at']);
+        }
+        return json_encode($diffArray);
+    }
     
 }

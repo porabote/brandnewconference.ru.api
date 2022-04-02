@@ -21,4 +21,11 @@ class ApiUsers extends Model
         'post_name'
     ];
 
+    public function user()
+    {
+        return $this->belongsToMany(Dialogs::class);
+//            ->as('subscription')
+//            ->withTimestamps();
+    }
+
 }

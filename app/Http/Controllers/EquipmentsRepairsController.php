@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\EquipmentsRepairs;
+use App\Models\EquipmentsRepairsSpares;
 use App\Models\History;
 use Porabote\FullRestApi\Server\ApiTrait;
+use App\Http\Controllers\SparesController;
 
 class EquipmentsRepairsController extends Controller
 {
@@ -17,23 +19,20 @@ class EquipmentsRepairsController extends Controller
 
         if (isset($data['id']) && $data['id']) {
 
-
             $record = EquipmentsRepairs::find($data['id']);
+            $dataBefore = $record->getAttributes();
 
             foreach ($data as $fieldName => $value) {
-                if (isset($record[$fieldName])) {
-                    $record[$fieldName] = $value;
-                }
+                    $record->$fieldName = $value;
             }
-
-            $diff = array_diff($data, $record->toArray());
 
             $record->update();
 
             History::create([
                 'model_alias' => 'equipments',
                 'record_id' => $record->equipment_id,
-                'msg' => 'Изменена запись - Ремонт ' . json_encode($diff)
+                'msg' => 'Изменена запись - ТО и ремонт ID ' . $record->id,
+                'diff' => History::setDiff($dataBefore, $data),
             ]);
 
         } else {
@@ -60,6 +59,19 @@ class EquipmentsRepairsController extends Controller
 
         return response()->json([
             'data' => $record,
+            'meta' => []
+        ]);
+    }
+
+    function backToStore($request, $nodeId)
+    {
+        $record = EquipmentsRepairsSpares::find($nodeId);
+        //debug($record->toArray());
+        SparesController::setRemainLog($record['spare_id'], $record['count'], 0, $record['repair_id']);
+        $record->delete();
+
+        return response()->json([
+            'data' => $record->toArray(),
             'meta' => []
         ]);
     }

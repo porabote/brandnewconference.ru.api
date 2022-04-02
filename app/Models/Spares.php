@@ -21,9 +21,11 @@ class Spares extends Model
         "description",
         "vendor_code",
         "quantity",
+        "unit",
         "store_id",
         "user_id",
         "equipment_id",
+        "spares_type_id",
     ];
 
     public static function boot() {
@@ -36,19 +38,39 @@ class Spares extends Model
         return $this->belongsTo(ApiUsers::class);
     }
 
-    public function equipments()
+    public function equipment()
     {
         return $this->belongsTo(Equipments::class, 'equipment_id', 'id');
     }
 
+    public function store()
+    {
+        return $this->belongsTo(Objects::class, 'store_id', 'id');
+    }
+
     public function repairs()
     {
-        return $this->belongsTo(Repairs::class, 'repair_id', 'id');
+        return $this->belongsTo(EquipmentsRepairs::class, 'repair_id', 'id');
+    }
+
+    public function status()
+    {
+        return $this->belongsTo(Statuses::class, 'status_id', 'id' );
+    }
+
+    public function spares_type()
+    {
+        return $this->belongsTo(SparesTypes::class, 'spares_type_id', 'id');
     }
 
     public function files()
     {
         return $this->hasMany(File::class, 'record_id', 'id' )->where('model_alias', '=', 'spares');
+    }
+
+    public function remains()
+    {
+        return $this->hasMany(SparesRemains::class, 'spare_id', 'id' )->orderByDesc('id');
     }
 
     public function history()

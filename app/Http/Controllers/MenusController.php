@@ -37,7 +37,7 @@ class MenusController extends Controller
             ->first()
         ->toArray();
 
-      //  if ($aro['id'] == 5) $aro['parent_id'] = 2;
+      //  if ($aro['id'] == 5) $aro['parent_id'] = 4;
 
         if ($aro['parent_id'] == 1) {
             return response()->json([

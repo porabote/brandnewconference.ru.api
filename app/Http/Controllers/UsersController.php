@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Porabote\Components\Auth\AuthException;
+use App\Http\Components\Mailer\Mailer;
+use App\Http\Components\Mailer\Message;
 use Porabote\Auth\JWT;
 use Porabote\Auth\Auth;
 use App\Models\Users;
@@ -60,15 +62,15 @@ class UsersController extends Controller
 
     function _identify()
     {
-        if(!$this->authData) throw new \Porabote\Exceptions\AuthException('Auth data is empty');
+        if (!$this->authData) throw new \Porabote\Exceptions\AuthException('Auth data is empty');
 
-        if(!isset($this->authData['username']) || !isset($this->authData['password'])) {
+        if (!isset($this->authData['username']) || !isset($this->authData['password'])) {
             throw new \Porabote\Exceptions\AuthException('Error of identify: some request data wasn`t recieved');
         }
 
         $user = Users::where('username', $this->authData['username'])->first();
 
-        if(!$user) throw new \Porabote\Exceptions\AuthException('Error of identify: User not found');
+        if (!$user) throw new \Porabote\Exceptions\AuthException('Error of identify: User not found');
 
         return $this->_authentificate($user);
     }
@@ -83,16 +85,6 @@ class UsersController extends Controller
         unset($userData['password']);
 
         return $userData;
-    }
-
-    function registration()
-    {
-//        $user = new Users();
-//        $user->password = Hash::make('z');
-//        $user->username = 'd.razumihin@porabote.ru';
-//        $user->name = 'Дмитрий';
-//        $user->last_name = 'Разумихин';
-//        $user->save();
     }
 
     function setToken(Request $request)
@@ -134,7 +126,7 @@ class UsersController extends Controller
             ->where('foreign_key', $data['user_id'])
             ->where('label', 'User')
             ->first()
-        ->toArray();
+            ->toArray();
 
         $acosList = AclAcos::orderBy('name', 'asc')->get();
         $permissions = collect(AclPermissions::get()
@@ -198,11 +190,60 @@ class UsersController extends Controller
             ->where('aco_id', $aco_id)
             ->where('aro_id', $aro_id)
             ->first();
-       // $perm = AclPermissions::find($permission['id']);
+        // $perm = AclPermissions::find($permission['id']);
 
         if ($permission) {
             $permission->delete();
         }
+    }
+
+    function makeInvite($request)
+    {
+        $data = $request->all();
+
+        $User = self::_create($data);
+
+        $msgData['user'] = $User->toArray();
+        $msgData['sender'] = Auth::$user;
+        $message = new Message();
+        $message->setData($msgData)->setTemplateById(9);
+debug($msgData);
+        Mailer::setTo($User['username']);
+        Mailer::send($message);
+
+    }
+
+    static function _create($data)
+    {
+        $user = Users::get()
+            ->where('username', $data['username'])
+            ->first();
+
+        if (!$user) {
+
+            $user = [
+                'username' => $data['username'],
+                'name' => $data['name'],
+                'last_name' => $data['last_name'],
+                'confirm' => 0,
+                'token' => self::createToken(),
+                'post_id' => null,
+                'api_id' => null,
+                'password' => null,
+                'role_id' => 0,
+            ];
+
+            return Users::create($user);
+        } else {
+            return $user;
+        }
+    }
+
+    static function createToken()
+    {
+        $token = openssl_random_pseudo_bytes(16);
+        $token = bin2hex($token);
+        return $token;
     }
 
 }

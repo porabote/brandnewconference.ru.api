@@ -32,7 +32,7 @@ class CertificatesController extends Controller
         $message = new Message();
         $message->setData($msgData)->setTemplateById(6);
 
-        ObserversController::_subscribe(Auth::$user->api_id, 9, $data['record_id']);
+        ObserversController::_subscribe([Auth::$user->api_id], [9], $data['record_id']);
 
         Mailer::setToByEventId([9], $data['record_id']);
         Mailer::send($message);

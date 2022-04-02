@@ -26,7 +26,7 @@ class ApiUsersController extends Controller
             ->toArray();
 
         foreach ($users as $user) {
-            $api_user = self::checkAndAddUser($user);
+            $api_user = self::_checkAndAddUser($user);
 
             if ($api_user) {
                 $user_local = Users::find($user['id']);
@@ -38,7 +38,7 @@ class ApiUsersController extends Controller
         }
     }
 
-    static function checkAndAddUser($user_local)
+    static function _checkAndAddUser($user_local)
     {
 
         $userApi = DB::connection('auth_mysql')
@@ -56,5 +56,16 @@ class ApiUsersController extends Controller
         } else {
             return (array) $userApi;
         }
+    }
+
+    function _create($data)
+    {
+        $ApiUser = self::_checkAndAddUser([
+            'post_name' => $data['post_name'],
+            'username' => $data['username'],
+            'fio' => $data['last_name'] . ' ' . $data['name'],
+        ]);
+
+        return $ApiUser;
     }
 }
