@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Notifications\Notifiable;
 use Porabote\Auth\Auth;
 
-class AclAros extends Model
+class AclArosLocal extends Model
 {
     //protected $connection = 'Thyssen_mysql';
     protected $table = 'acl_aros';

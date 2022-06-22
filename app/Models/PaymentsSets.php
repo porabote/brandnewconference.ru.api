@@ -12,6 +12,7 @@ class PaymentsSets extends Model
 
     protected $table = 'payments_sets';
     public static $limit = 50;
+    public $timestamps = false;
 
     function __construct(array $attributes = [])
     {

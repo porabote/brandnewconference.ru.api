@@ -41,7 +41,7 @@ class Payments extends Model
 
     public function object()
     {
-        return $this->belongsTo(Departments::class, 'object_id', 'id' );
+        return $this->belongsTo(DepartmentsLegacy::class, 'object_id', 'id' );
     }
 
     public function status()

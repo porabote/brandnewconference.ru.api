@@ -11,17 +11,33 @@ use App\Http\Components\Mailer\Message;
 use Porabote\Auth\JWT;
 use Porabote\Auth\Auth;
 use App\Models\Users;
+use App\Models\UsersRequests;
+use App\Models\ApiUsers;
 use App\Models\AclAcos;
 use App\Models\AclAros;
 use App\Models\AclPermissions;
 use Porabote\FullRestApi\Server\ApiTrait;
+use App\Exceptions\ApiException;
+use Porabote\Curl\Curl;
+use App\Http\Components\AccessLists;
 
 class UsersController extends Controller
 {
-
     use ApiTrait;
 
+    static $authAllows;
     private $authData = [];
+
+    function __construct()
+    {
+        self::$authAllows = [
+            'login',
+            'setToken',
+            'confirmInvitation',
+            'sendInvitationNotification',
+             'migrationPosts'
+        ];
+    }
 
     function check(Request $request)
     {
@@ -39,52 +55,53 @@ class UsersController extends Controller
     function login(Request $request)
     {
         try {
-            $this->authData = $request->all()['data'];
+            $data = $request->all();
+            $data = [
+                'username' => 'maksimov_den@mail.ru',
+                'password' => 'z7893727',
+                'account_alias' => 'Thyssen',
+            ];
 
-            $this->_login();
-        } catch (\Porabote\Exceptions\AuthException $exception) {
+            $user = Auth::identify(
+                $data['username'],
+                $data['password'],
+                $data['account_alias'],
+            );
+
+            $loginResponse = $this->authInLegasyApp($data);
+
+            return response()->json([
+                'data' => $loginResponse,
+                'meta' => []
+            ]);
+            //http_code
+            // debug($loginResponse);
+
+            // return response()->json($token);
+            //$request->session()->put('test', $loginResponse['session_id']);
+            //  $jwtToken = $this->setToken($user);
+
+        } catch (\Porabote\Auth\AuthException $exception) {
             echo $exception->jsonApiError();
         }
 
     }
 
-    function _login()
+    function authInLegasyApp($data)
     {
-        $user = $this->_identify();
+        $curl = new Curl();
+        $curl->setData([
+            'username' => $data['username'],
+            'password' => $data['password'],
+            'account_alias' => $data['account_alias']
+        ]);
 
-        if ($user) {
-            return response()->json([
-                'data' => JWT::setToken($user),
-                'meta' => []
-            ]);
-        }
-    }
+        $response = $curl->post('https://thyssen24.ru/users/login');
+        $response = json_decode($response['response'], true);
 
-    function _identify()
-    {
-        if (!$this->authData) throw new \Porabote\Exceptions\AuthException('Auth data is empty');
+        setcookie('dur', $response['session_id'], time()+3600*720, "/", "api.thyssen24.ru", 1);
 
-        if (!isset($this->authData['username']) || !isset($this->authData['password'])) {
-            throw new \Porabote\Exceptions\AuthException('Error of identify: some request data wasn`t recieved');
-        }
-
-        $user = Users::where('username', $this->authData['username'])->first();
-
-        if (!$user) throw new \Porabote\Exceptions\AuthException('Error of identify: User not found');
-
-        return $this->_authentificate($user);
-    }
-
-    function _authentificate($user)
-    {
-        if (!password_verify($this->authData['password'], $user->password)) {
-            throw new \Porabote\Exceptions\AuthException('Authentificate error: the password is incorrect');
-        }
-
-        $userData = $user->getAttributes();
-        unset($userData['password']);
-
-        return $userData;
+        return $response;
     }
 
     function setToken(Request $request)
@@ -102,13 +119,12 @@ class UsersController extends Controller
     {
         $userData = [
             'id' => null,
-            'username' => null,
+            'email' => null,
             'name' => null,
-            'last_name' => null,
             'post_id' => null,
+            'account_id' => null,
             'account_alias' => null,
             'avatar' => null,
-            'api_id' => null,
             'post_name' => null,
             'role_id' => null
         ];
@@ -145,7 +161,7 @@ class UsersController extends Controller
 
     function setPermission($request)
     {
-        $user = Users::find(Auth::$user->id)->toArray();
+        $user = ApiUsers::find(Auth::$user->id)->toArray();
         if ($user['role_id'] != 1) {
             return response()->json([
                 'data' => [
@@ -197,45 +213,220 @@ class UsersController extends Controller
         }
     }
 
-    function makeInvite($request)
+    function create($request)
     {
-        $data = $request->all();
+        try {
+            $data = $request->all();
 
-        $User = self::_create($data);
+            if (!$access = AccessLists::_check(11)) {
+                throw new ApiException('Извините, Вам не выданы права для добавления пользователя.');
+            }
+            
+            $user = self::_createUser($data);
+            $aro = self::_createAro($user->id);
 
-        $msgData['user'] = $User->toArray();
-        $msgData['sender'] = Auth::$user;
-        $message = new Message();
-        $message->setData($msgData)->setTemplateById(9);
-debug($msgData);
-        Mailer::setTo($User['username']);
-        Mailer::send($message);
+            $this->_setPermissionsByDefault($aro->id);
+
+            return response()->json([
+                'data' => $user,
+                'meta' => []
+            ]);
+
+        } catch (ApiException $e) {
+            $e->toJSON();
+        }
 
     }
 
-    static function _create($data)
+    private function _setPermissionsByDefault($aroId)
     {
-        $user = Users::get()
-            ->where('username', $data['username'])
+        $acos = [1, 20, 43, 32, 37];
+        foreach ($acos as $aco) {
+            $this->addAccess($aco, $aroId);
+        }
+    }
+
+    function edit($request)
+    {
+        try {
+
+            $data = $request->all();
+
+            if ($data['id'] != Auth::$user->id && !$access = AccessLists::_check(11)) {
+                throw new ApiException('Извините, Вам не выданы права для редактирования пользователя.');
+            }
+
+            $user = ApiUsers::find($data['id']);
+
+            $allowedList = array_flip(ApiUsers::$allowed_attributes);
+
+            foreach ($data as $field => $value) {
+                if (array_key_exists($field, $allowedList)) {
+                    $user->$field = $value;
+                }
+            }
+
+            $user->update();
+
+            return response()->json([
+                'data' => $user->toArray(),
+                'meta' => []
+            ]);
+
+        } catch (ApiException $e) {
+            $e->toJSON();
+        }
+    }
+
+    private function _createAro($user_id)
+    {
+        $aro = AclAros::create([
+            'parent_id' => null,
+            'label' => 'User',
+            'foreign_key' => $user_id,
+            'model' => 'App\Models\Users',            
+        ]);
+
+        return $aro;
+    }
+
+    private static function _createUser($data)
+    {
+        $user = ApiUsers::get()
+            ->where('email', $data['email'])
             ->first();
 
         if (!$user) {
 
             $user = [
-                'username' => $data['username'],
-                'name' => $data['name'],
+                'email' => $data['email'],
+                'name' => $data['last_name'] . ' ' . $data['name'],
                 'last_name' => $data['last_name'],
-                'confirm' => 0,
+                'patronymic' => $data['patronymic'],
+                'post_name' => $data['post_name'],
+                'department_id' => $data['department_id'],
+                'status' => 'invited',
                 'token' => self::createToken(),
-                'post_id' => null,
-                'api_id' => null,
                 'password' => null,
-                'role_id' => 0,
+                'role_id' => 2,
             ];
-
-            return Users::create($user);
+            return ApiUsers::create($user);
         } else {
-            return $user;
+            throw new ApiException('Пользователь с логином ' . $data['email'] . ' уже существует');
+        }
+    }
+
+    function createUserRequest($request)
+    {
+        $data = $request->all();
+        $request = self::_createUserRequest($data['user_id']);
+
+        return response()->json([
+            'data' => $request,
+            'meta' => []
+        ]);
+    }
+
+    static function _createUserRequest($user_id)
+    {
+        return UsersRequests::create([
+            'user_id' => $user_id,
+            'sender_id' => Auth::$user->id,
+            'token' => self::createToken(),
+            //'date_request' => \Carbon\Carbon::now(),
+            'account_id' => Auth::$user->account_id,
+        ]);
+    }
+
+    function sendInvitationNotification($Request, $requestId = 1)
+    {
+        $msgData = UsersRequests::with('user')
+            ->with('sender')
+            ->find($requestId)
+            ->toArray();
+
+
+        $user = new \stdClass();
+        $user->account_alias = 'Thyssen';//Thyssen   Solikamsk
+        \Porabote\Auth\Auth::setUser($user);
+
+        $message = new Message();
+        $message->setData($msgData)->setTemplateById(9);
+        Mailer::setTo($msgData['user']['email']);
+        Mailer::send($message);
+
+        return response()->json([
+            'data' => $msgData,
+            'meta' => []
+        ]);
+    }
+
+    function confirmInvitation($request)
+    {
+        try {
+            $data = $request->all();
+
+            $request = UsersRequests::with('user')
+                ->with('sender')
+                ->find($data['requestId']);
+
+            if (!isset($request->token) || $request->token != $data['token']) {
+                throw new ApiException('Извините, токен уже был использован.');
+            }
+
+            $userRequest = $request->toArray();
+
+            if(!isset($data['password'])) {
+
+                self::_checkRequestDate($userRequest['date_request']);
+
+                return response()->json([
+                    'data' => $userRequest,
+                    'meta' => []
+                ]);
+            } else {
+                self::_changePassword($userRequest['user_id'], $data['password'], $data['password_confirm']);
+
+                $request->date_confirm = \Carbon\Carbon::now();
+                $request->token = null;
+                $request->update();
+            }
+        } catch (ApiException $e) {
+            $e->toJSON();
+        }
+    }
+
+    static function _changePassword($user_id, $password, $password_confirm)
+    {
+        self::_checkPassword($password, $password_confirm);
+
+        $hash = Hash::make($password);
+
+        $user = ApiUsers::find($user_id);
+
+        if (!$user) throw new ApiException('Пользователь не задан или не найден.');
+
+        $user->password = $hash;
+        $user->status = 'active';
+        $user->update();
+    }
+
+    static function _checkPassword($password, $password_confirm)
+    {
+        if ($password != $password_confirm) {
+            throw new ApiException('Пароли не совпадают.');
+        } elseif (strlen($password) < 4) {
+            throw new ApiException('Пароль не может быть менее 4 символов.');
+        }
+    }
+
+    static function _checkRequestDate($date)
+    {
+        $dateDeadline = (new \DateTime($date))->modify('+3 day');
+        $dateNow = new \DateTime();
+
+        if ($dateDeadline < $dateNow) {
+            throw new ApiException('Извините, с момента приглашения прошло более 3х дней, срок токена истек.');
         }
     }
 
@@ -246,4 +437,109 @@ debug($msgData);
         return $token;
     }
 
+
+
+
+
+
+
+
+
+
+
+
+
+    function migrationPosts()
+    {
+        $user = new \stdClass();
+        $user->account_alias = 'Thyssen';//Thyssen   Solikamsk
+        \Porabote\Auth\Auth::setUser($user);
+
+
+        $apiUsers = \App\Models\ApiUsers::get()->toArray();
+        $apiUsersList = [];
+        $apiUsersListFull = [];
+        $apiUsersListFullByOld = [];
+        foreach ($apiUsers as $apiUser) {
+
+            if($apiUser['local_id']) $apiUsersListFullByOld[$apiUser['local_id']] = $apiUser['id'];
+
+            $apiUsersList[$apiUser['email']] = $apiUser['id'];
+            $apiUsersListFull[$apiUser['id']] = $apiUser;
+
+        }
+
+        $posts = \App\Models\Posts::get()->toArray();
+        $postsList = [];
+        foreach ($posts as $post) {
+            if (!isset($apiUsersList[$post['email']])) debug($post['email']);
+            $newId = (isset($apiUsersList[$post['email']])) ? $apiUsersList[$post['email']] : '';
+            $postsList[$post['id']] = $newId;
+        }
+
+//        $users = \App\Models\ApiUsers::get();
+//        foreach($users as $user) {
+//            if (isset($postsList[$user['email']])) {
+//                $user->phone = $postsList[$user['email']];
+//                $user->update();
+//            }
+//        }
+
+
+//          $files = \App\Models\Files::where('date_created', '<', '2022-05-14 11:51:01')
+//              ->orderBy('id', 'desc')
+//              ->with('user')
+//            //  ->limit(10)
+//              ->get();
+//       // ini_set('memory_limit', '1256M');
+//foreach ($files as $file) {
+//
+//    if(isset($apiUsersList[$file['user']['username']])) {
+//        $userId = $apiUsersList[$file['user']['username']];
+//        $file->user_id = $userId;//debug($userId);
+//       // $file->save();
+//    }
+//    //$file->user_id =
+//}
+//        foreach ($payments as $payment) {
+//
+//           // $payment['post_id'] = $postsList[$payment['post_id']];
+//            $payment['sender_id'] = $postsList[$payment['sender_id']];
+//           // debug($payment['id']);
+//           // debug($payment['acceptor_id']);
+//           // $payment->update();
+//        }
+
+//        $payments = \App\Models\PaymentsSets::where('id', '<', 376)->get();//9108 //9042
+//        foreach ($payments as $payment) {
+//
+//           // $payment['post_id'] = $postsList[$payment['post_id']];
+//            $payment['sender_id'] = $postsList[$payment['sender_id']];
+//           // debug($payment['id']);
+//           // debug($payment['acceptor_id']);
+//           // $payment->update();
+//        }
+
+
+//        $nomencl = \App\Models\PurchaseNomenclatures::get();
+//        foreach($nomencl as $nmcl) {
+//            if (!$nmcl['manager_id']) continue;
+//            if(!isset($postsList[$nmcl['manager_id']])) echo $nmcl['id'];
+//            $nmcl['manager_id'] = $postsList[$nmcl['manager_id']];
+//            //$nmcl->update();
+//        }
+
+//        $configs = \App\Models\Configs::find(12);
+//        $value = unserialize($configs['value']);
+//        $newValues = [];
+//
+//        foreach ($value as $val) {
+//            if (!isset($postsList[$val])) continue;
+//            $newValues[$postsList[$val]] = $postsList[$val];
+//        }
+//       // debug($newValues);
+//        $configs->value = serialize($newValues);
+//       // $configs->update();
+
+    }
 }

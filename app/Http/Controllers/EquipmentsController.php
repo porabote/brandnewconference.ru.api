@@ -23,6 +23,17 @@ class EquipmentsController extends Controller
 {
     use ApiTrait;
 
+    static $authAllows;
+    private $authData = [];
+
+    function __construct()
+    {
+        self::$authAllows = [
+            'exportToExcel',
+            'exportFeedToExcel'
+        ];
+    }
+
     function add(Request $request)
     {
         $data = $request->all();
@@ -442,6 +453,56 @@ class EquipmentsController extends Controller
     function exportFeedToExcel($request)
     {
         $data = $request->all();
-        debug($data);
+
+        $ids = explode('|', $data['ids']);
+
+        $records = Equipments::whereIn('id', $ids)
+            ->with('organizations_own')
+            ->with('object')
+            ->with('object.platform')
+           // ->with('type')
+            ->with('status')
+           // ->with('status_reason')
+            ->get()
+            ->toArray();
+
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load(storage_path() . '/export/equipments/equipments_list.xlsx');
+        $styleArray = [
+            'alignment' => [
+                'wrapText' => true,
+                //    'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER,
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+            ],
+            'borders' => array(
+                'allBorders' => array(
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => array('argb' => '00000000'),
+                ),
+            ),
+        ];
+        $sheet = $spreadsheet->getSheet(0);
+        $row = 5;
+        foreach ($records as $record) {
+            //debug($record);exit();
+            //$sheet->setCellValue('A' . $row, date('d-m-Y', strtotime($accident['date'])));
+            $sheet->setCellValue('B' . $row, $record['id']);
+            $sheet->setCellValue('C' . $row, $record['name']);
+            $sheet->setCellValue('D' . $row, $record['inventory_number']);
+            $sheet->setCellValue('E' . $row, $record['status']['name']);
+            $sheet->setCellValue('F' . $row, $record['organizations_own']['name']);
+            $sheet->setCellValue('G' . $row,
+                isset($record['object']['platform']) ? $record['object']['platform']['ru_alias'] : '');
+            $sheet->setCellValue('H' . $row, $record['object']['name']);
+
+            $sheet->getStyle('B' . $row . ':H' . $row)->applyFromArray($styleArray);
+            $row++;
+        }
+
+        $writer = new Xlsx($spreadsheet);
+        $fileName = 'equipments_list.xlsx';
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="'. urlencode($fileName).'"');
+        $writer->save('php://output');
+
     }
 }

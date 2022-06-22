@@ -12,6 +12,7 @@ class Certificates extends Model
 {
     public static $limit = 50;
     protected $table = 'store_documentations';
+    public $timestamps = false;
 
     public static function boot() {
         parent::boot();
@@ -34,12 +35,21 @@ class Certificates extends Model
 
     public function user()
     {
-        return $this->belongsTo(Posts::class, 'post_id', 'id' );
+        return $this->belongsTo(ApiUsers::class, 'post_id', 'id' );
     }
 
     public function status()
     {
         return $this->belongsTo(Statuses::class, 'status_id', 'id' );
+    }
+
+    public function steps()
+    {
+        return $this->hasMany(AcceptListsSteps::class, 'foreign_key')
+            ->where('model', 'Certificates')
+            ->where('account_id', Auth::$user->account_id)
+            ->where('active', '=', 1)
+            ->orderBy('lft');
     }
 
 }

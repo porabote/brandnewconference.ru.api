@@ -4,13 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Notifications\Notifiable;
 use Porabote\Auth\Auth;
 
-class Configs extends Model
+class DepartmentsLegacy extends Model
 {
+    protected $table = 'departments';
 
-    public $timestamps = false;
-    
     function __construct(array $attributes = [])
     {
         parent::__construct($attributes);

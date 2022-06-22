@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\DB;
 use Porabote\FullRestApi\Server\ApiTrait;
 use App\Models\Users;
 use App\Models\ApiUsers;
+use App\Http\Components\AccessLists;
 
 class ApiUsersController extends Controller
 {
@@ -67,5 +68,15 @@ class ApiUsersController extends Controller
         ]);
 
         return $ApiUser;
+    }
+
+    function checkEditAccess()
+    {
+        $isCanEdit = AccessLists::_check(11);
+
+        return response()->json([
+            'data' => ['isCanEdit' => $isCanEdit],
+            'meta' => []
+        ]);
     }
 }

@@ -9,10 +9,19 @@ use Porabote\Auth\Auth;
 
 class Departments extends Model
 {
-    function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-        $this->connection = Auth::$user->account_alias . '_mysql';
-    }
+    protected $connection = 'dicts_mysql';
 
+    protected $fillable = [
+        'name',
+        'company_id',
+        'label',
+        'code',
+        'account_id',
+        'local_id'
+    ];
+
+    public function account()
+    {
+        return $this->belongsTo(Accounts::class, 'account_id', 'id');
+    }
 }

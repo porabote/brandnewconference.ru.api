@@ -39,7 +39,7 @@ class MenusController extends Controller
 
       //  if ($aro['id'] == 5) $aro['parent_id'] = 4;
 
-        if ($aro['parent_id'] == 1) {
+        if ($aro['parent_id'] == 1) {//debug(Auth::$user->id);
             return response()->json([
                 'data' => $menus,
                 'meta' => []
@@ -62,119 +62,31 @@ class MenusController extends Controller
                 $menusAllowed[$menu->lft] = $menu;
             }
         }
-//$this->addMass();
+
         return response()->json([
             'data' => $menusAllowed,
             'meta' => []
         ]);
     }
 
-    function addMass()
-    {// 10 37 22 1 43
-        $aros = AclAros::get()->toArray();
-        foreach ($aros as $aro) {
-            $perm = AclPermissions::where('aro_id', $aro['id'])->where('aco_id', 43)->get()->toArray();
-            if (!$perm) {
-                $newPerm = [
-                    "aro_id" => $aro['id'],
-                    "aco_id" => 43,
-                    "_create" => 1,
-                    "_read" => 1,
-                    "_update" => 1,
-                    "_delete" => 1,
-                ];
-                AclPermissions::create($newPerm);
-            }
-        }
-    }
-
-    function getByAcl_TMP()
-    {
-        $tree = $this->getDepth();
-
-        // Заливаем ACOS
-//        foreach ($tree as $item) {
-//
-//            $aco = [
-//                'name' => $item->name,
-//                'foreign_key' => $item->id,
-//                'parent_id' => null,
-//                'model' => 'App\Models\Menus'
-//            ];
-//            $aco = AclAcos::create($aco);
-//
-//            debug($item);
-//            $menuUpRecord = Menus::find($item->id);
-//            $menuUpRecord->aco_id = $aco['id'];
-//            $menuUpRecord->update(['aco_id' => $aco['id']]);
-//            $menuUpRecord->save();
-//        }
-
-        // Заливаем AROS
-//        $acl_aros = AclAros::get();
-//
-//        $aros = DB::connection('Solikamsk_mysql')->table('aros')->get()->toArray();
+//    function addMass()
+//    {
+//        $aros = AclAros::get()->toArray();
 //        foreach ($aros as $aro) {
-//
-//            $newAro = [
-//                'id' => $aro->id,
-//                'label' => $aro->alias,
-//                'parent_id' => $aro->parent_id,
-//                'foreign_key' => $aro->foreign_key,
-//                'model' => "App\Models\Users",
-//            ];
-//
-//            AclAros::create($newAro);
+//            $perm = AclPermissions::where('aro_id', $aro['id'])->where('aco_id', 43)->get()->toArray();
+//            if (!$perm) {
+//                $newPerm = [
+//                    "aro_id" => $aro['id'],
+//                    "aco_id" => 43,
+//                    "_create" => 1,
+//                    "_read" => 1,
+//                    "_update" => 1,
+//                    "_delete" => 1,
+//                ];
+//                AclPermissions::create($newPerm);
+//            }
 //        }
-
-        //Заливаем пермишены
-
-//        foreach ($tree as $menu) {
-//            debug($menu);
-//
-////            $aco_parent = TableRegistry::get('Acos')
-////                ->find()
-////                ->where(['Acos.alias' =>  $aco['controller'], 'Acos.root_node' => $aco['plugin'], 'parent_id' => 1])
-////                ->first();
-//            break;
-//        }
-
-//        $acos = DB::connection('Solikamsk_mysql')->table('acos')->whereNotNull('title')->get()->toArray();
-//foreach ($acos as $aco) {
-//
-//    $aco->parent = DB::connection('Solikamsk_mysql')->table('acos')->where('id', $aco->parent_id)->get()->toArray();
-//    debug($aco);
-//}
-
-        $acosMap = [];
-        $acosList = [];
-        foreach (AclAcos::get()->toArray() as $menu) {//debug($menu);
-            if ($menu['old_id']) {
-                $acosMap[$menu['old_id']] = $menu['id'];
-                $acosList[$menu['old_id']] = $menu['old_id'];
-            }
-        }
-//debug($acosMap);
-//        debug($acosList);
-        $permissions = DB::connection('Solikamsk_mysql')->table('aros_acos')->whereIn('aco_id', $acosList)->get()->toArray();
-        $i = 0;
-        foreach ($permissions as $permission) {
-           // debug($permission);
-            $newPerm = [
-                "aro_id" => $permission->aro_id,
-                "aco_id" => $acosMap[$permission->aco_id],
-                "_create" => 1,
-                "_read" => 1,
-                "_update" => 1,
-                "_delete" => 1,
-            ];
-            $i++;
-//debug($newPerm);
-            AclPermissions::create($newPerm);
-           // if ($i == 10) break;
-        }
-
-    }
+//    }
 
     function getDepth()
     {

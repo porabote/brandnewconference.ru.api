@@ -10,6 +10,8 @@ class Files extends Model
 {
     use HasFactory;
 
+    public $timestamps = false;
+    
     protected $fillable = [
         'name',
         'file_path',
@@ -36,6 +38,11 @@ class Files extends Model
     {
         parent::__construct($attributes);
         $this->connection = Auth::$user->account_alias . '_mysql';
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(Users::class);
     }
 
 }

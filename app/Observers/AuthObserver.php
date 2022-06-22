@@ -2,7 +2,7 @@
 
 namespace App\Observers;
 
-use Porabote\Auth\Auth as PrbAuth;
+use Porabote\Auth\Auth;
 
 
 class AuthObserver
@@ -17,9 +17,9 @@ class AuthObserver
     {
         $attrs = $model->getOriginal();
 
-        $model->user_id = PrbAuth::getUser('api_id');
+        $model->user_id = Auth::getUser('id');
 
-        if (array_key_exists('user_name', $attrs)) $model->user_name = PrbAuth::getUser('name');
+        if (array_key_exists('user_name', $attrs)) $model->user_name = Auth::getUser('name');
 
         if (array_key_exists('date_created', $attrs)) $model->date_created = date("Y-m-d H:i:s");
 

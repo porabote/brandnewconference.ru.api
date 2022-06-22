@@ -20,7 +20,7 @@ class ObjectsLocal extends Model
 
     public function departments()
     {
-        return $this->hasMany(Departments::class, 'department_id', 'id' )
+        return $this->hasMany(DepartmentsLegacy::class, 'department_id', 'id' )
             ->orderBy('name');
     }
 

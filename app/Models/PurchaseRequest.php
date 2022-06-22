@@ -12,6 +12,7 @@ class PurchaseRequest extends Model
 {
     public static $limit = 50;
     protected $table = 'purchase_request';
+    public $timestamps = false;
 
     public static function boot() {
         parent::boot();

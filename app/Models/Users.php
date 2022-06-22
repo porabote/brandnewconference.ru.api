@@ -72,4 +72,23 @@ class Users extends Model
     {
         return $this->belongsTo(ApiUsers::class, 'api_id', 'id' );
     }
+
+    public function avatar()
+    {
+        return $this->hasOne(Files::class, 'record_id', 'id' )
+            ->where('model_alias', 'Users')
+            ->where('label', 'main');
+    }
+
+    public function aro()
+    {
+        return $this->hasOne(AclAros::class, 'foreign_key', 'id' )
+            ->where('label', 'User');
+    }
+
+    public function users_requests()
+    {
+        return $this->hasMany(UsersRequests::class, 'user_id', 'id' );
+    }
+
 }

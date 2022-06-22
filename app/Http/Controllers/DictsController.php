@@ -9,6 +9,15 @@ use Porabote\FullRestApi\Server\ApiTrait;
 class DictsController extends Controller
 {
     use ApiTrait;
+    
+    public static $authAllows;
+
+    function __construct()
+    {
+        self::$authAllows = [
+            'get'
+        ];
+    }
 
     function getCallback($payload)
     {
