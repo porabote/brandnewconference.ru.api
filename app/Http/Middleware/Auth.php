@@ -20,6 +20,7 @@ class Auth
     public function handle($request, Closure $next)
     {
         try {
+
             $authHeader = $request->header('Authorization');
 
             $authHeaderSplits = explode(' ', $authHeader);
@@ -42,7 +43,9 @@ class Auth
 
     private static function checkAllows($request)
     {
-        $uri = explode('/', str_replace('/api/', '', $request->getPathInfo()));
+        $uri = explode('/', str_replace('/api/', '', $request->getRequestUri()));
+      //  debug($request);exit();
+//echo($request->getRequestUri());exit();
 
         $controllerAlias = '\App\Http\Controllers\\' . \Porabote\Stringer\Stringer::snakeToCamel($uri[0]) . 'Controller';
         $methodAlias = $uri[1];
@@ -54,19 +57,17 @@ class Auth
             throw new \Porabote\Auth\AuthException('Class doesn`t exists.');
         } else {
             $controller = new $controllerAlias();
+
             if (
                 property_exists($controllerAlias, "authAllows")
                 && in_array($methodAlias, $controller::$authAllows)
             ) {
                 return false;
             }
+
+
         }
         return true;
     }
-
-//    private function getUser($token)
-//    {
-//        return JWT::_decode($token);
-//    }
 
 }

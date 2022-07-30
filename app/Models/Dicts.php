@@ -8,7 +8,7 @@ use Illuminate\Notifications\Notifiable;
 
 class Dicts extends Model
 {
-    protected $connection = 'dicts_mysql';
+    //protected $connection = 'dicts_mysql';
     protected $table = 'dicts';
 
 }

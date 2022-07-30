@@ -35,7 +35,6 @@ class UsersController extends Controller
             'setToken',
             'confirmInvitation',
             'sendInvitationNotification',
-             'migrationPosts'
         ];
     }
 
@@ -55,31 +54,26 @@ class UsersController extends Controller
     function login(Request $request)
     {
         try {
-            $data = $request->all();
-            $data = [
-                'username' => 'maksimov_den@mail.ru',
-                'password' => 'z7893727',
-                'account_alias' => 'Thyssen',
-            ];
+            $data = $request->all();//debug($data);exit();
+//            $data = [
+//                'username' => 'maksimov_den@mail.ru',
+//                'password' => 'z7893727',
+//                'account_alias' => 'dentsu',
+//            ];
 
             $user = Auth::identify(
                 $data['username'],
                 $data['password'],
-                $data['account_alias'],
+                'dentsu'//$data['account_alias'],
             );
 
-            $loginResponse = $this->authInLegasyApp($data);
-
             return response()->json([
-                'data' => $loginResponse,
+                'data' => [
+                    //'user' => $user,
+                    'jwtToken' => $this->_setToken($user)
+                ],
                 'meta' => []
             ]);
-            //http_code
-            // debug($loginResponse);
-
-            // return response()->json($token);
-            //$request->session()->put('test', $loginResponse['session_id']);
-            //  $jwtToken = $this->setToken($user);
 
         } catch (\Porabote\Auth\AuthException $exception) {
             echo $exception->jsonApiError();
@@ -87,33 +81,6 @@ class UsersController extends Controller
 
     }
 
-    function authInLegasyApp($data)
-    {
-        $curl = new Curl();
-        $curl->setData([
-            'username' => $data['username'],
-            'password' => $data['password'],
-            'account_alias' => $data['account_alias']
-        ]);
-
-        $response = $curl->post('https://thyssen24.ru/users/login');
-        $response = json_decode($response['response'], true);
-
-        setcookie('dur', $response['session_id'], time()+3600*720, "/", "api.thyssen24.ru", 1);
-
-        return $response;
-    }
-
-    function setToken(Request $request)
-    {
-        $data = $request->all();
-        parse_str($data['data'], $user);
-
-        $token = $this->_setToken($user['data']);
-
-        return response()->json($token);
-
-    }
 
     function _setToken($userDataExt)
     {
@@ -390,6 +357,11 @@ class UsersController extends Controller
                 $request->date_confirm = \Carbon\Carbon::now();
                 $request->token = null;
                 $request->update();
+
+                return response()->json([
+                    'data' => [],
+                    'meta' => []
+                ]);
             }
         } catch (ApiException $e) {
             $e->toJSON();

@@ -34,11 +34,9 @@ class Files extends Model
         'data_s_path'
     ];
 
-    function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-        $this->connection = Auth::$user->account_alias . '_mysql';
-    }
+    protected $hidden = [
+        'path',
+    ];
 
     public function user()
     {

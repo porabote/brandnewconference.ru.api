@@ -10,22 +10,46 @@ use App\Models\AclAcos;
 use App\Models\AclAros;
 use App\Models\AclPermissions;
 use Porabote\Auth\Auth;
+use App\Http\Components\AccessLists;
 
 class MenusController extends Controller
 {
 
     use ApiTrait;
 
-    function get()
+    function create($request)
     {
-        $tree = $this->getDepth();
+        $data = $request->all();
 
-        ob_clean();
+        $menu = Menus::create($data);
+
+        $aco = AclAcos::create([
+            'name' => $menu->name,
+            'foreign_key' => $menu->id,
+            'model' => 'App\Models\Menus',
+            'link' => $menu->link,
+        ]);
+
+        $menu->aco_id = $aco->id;
+        $menu->update();
+
         return response()->json([
-            'data' => $tree,
+            'data' => $menu->toArray(),
             'meta' => []
         ]);
+
     }
+
+//    function get()
+//    {
+//        $tree = $this->getDepth();
+//
+//        ob_clean();
+//        return response()->json([
+//            'data' => $tree,
+//            'meta' => []
+//        ]);
+//    }
 
 
     function getByAcl()
@@ -35,20 +59,27 @@ class MenusController extends Controller
             ->where('label', "User")
             ->get()
             ->first()
-        ->toArray();
+            ->toArray();
 
-      //  if ($aro['id'] == 5) $aro['parent_id'] = 4;
+        //  if ($aro['id'] == 5) $aro['parent_id'] = 4;
 
         if ($aro['parent_id'] == 1) {//debug(Auth::$user->id);
             return response()->json([
-                'data' => $menus,
+                'data' => [
+                    'menu' => $menus,
+                    'perms' => [
+                        'isCanViewUsers' => AccessLists::_check(16),
+                        'isCanViewBusinessEvents' => AccessLists::_check(17),
+                        'isCanViewConfigs' => AccessLists::_check(18),
+                    ],
+                ],
                 'meta' => []
             ]);
         }
 
         $aro_id = $aro['id'];
 
-     //   if ($aro_id == 5) $aro_id = 258;
+        //   if ($aro_id == 5) $aro_id = 258;
 
         $perms = AclPermissions::where('aro_id', $aro_id)->get()->toArray();
         $permsList = [];
@@ -64,7 +95,14 @@ class MenusController extends Controller
         }
 
         return response()->json([
-            'data' => $menusAllowed,
+            'data' => [
+                'menu' => $menusAllowed,
+                'perms' => [
+                    'isCanViewUsers' => AccessLists::_check(16),
+                    'isCanViewBusinessEvents' => AccessLists::_check(17),
+                    'isCanViewConfigs' => AccessLists::_check(18),
+                ],
+            ],
             'meta' => []
         ]);
     }
@@ -102,7 +140,7 @@ class MenusController extends Controller
         $menus = DB::connection('auth_mysql')->select($query);
 
         $output = [];
-        foreach  ($menus as $menu) {
+        foreach ($menus as $menu) {
             $output[$menu->lft] = $menu;
         }
         return $output;

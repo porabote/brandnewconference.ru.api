@@ -21,10 +21,10 @@ class AclPermissions extends Model
         "_delete",
     ];
 
-    function __construct(array $attributes = [])
-    {
-        parent::__construct($attributes);
-        $this->connection = Auth::$user->account_alias . '_mysql';
-    }
+//    function __construct(array $attributes = [])
+//    {
+//        parent::__construct($attributes);
+//        $this->connection = Auth::$user->account_alias . '_mysql';
+//    }
 
 }

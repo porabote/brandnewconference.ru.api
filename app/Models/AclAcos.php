@@ -18,6 +18,7 @@ class AclAcos extends Model
         'parent_id',
         'foreign_key',
         'model',
+        'link',
     ];
 
 }

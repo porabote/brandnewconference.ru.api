@@ -2,32 +2,18 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Notifications\Notifiable;
 use Kalnoy\Nestedset\NodeTrait;
 
-class Menus extends Model
+class Speakers extends Model
 {
     use NodeTrait;
 
-    protected $connection = 'auth_mysql';
-    protected $table = 'menus';
-    public $timestamps = false;
-
     protected $fillable = [
-        'primary_key',
         'name',
-        'link',
-        "parent_id",
-        "lft",
-        "rght",
-        "controller",
-        "action",
-        "plugin",
-        "target",
-        "flag",
-        "aco_id",
+        'last_name',
+        'post_name',
+        'patronymic',
     ];
 
     public function getLftName()
@@ -51,5 +37,13 @@ class Menus extends Model
         $this->setParentIdAttribute($value);
     }
     //Menus::fixTree();
+
+    public function avatar()
+    {
+        return $this->hasOne(Files::class, 'record_id', 'id' )
+            ->where('model_alias', 'Speakers')
+            ->orderByDesc('id')
+            ->where('label', 'avatar');
+    }
 
 }

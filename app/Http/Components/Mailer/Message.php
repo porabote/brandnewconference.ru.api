@@ -3,6 +3,7 @@ namespace App\Http\Components\Mailer;
 
 use Illuminate\Support\Facades\DB;
 use Porabote\Auth\Auth;
+use App\Models\MailsPatterns;
 
 class Message {
 
@@ -14,7 +15,7 @@ class Message {
 
     public function setTemplateById($template_id)
     {
-        $template = DB::table('api.mails_patterns')->find($template_id);
+        $template = MailsPatterns::find($template_id);
         $this->setSubject($template->subject);
         $this->setTemplate($template->body);
 
@@ -82,9 +83,10 @@ class Message {
             'Kotelnikovo' => 'Котельниково',
         ];
 
-        $this->data['platform']['en_alias'] = Auth::$user->account_alias;
-        $this->data['platform']['ru_alias'] = $accounts[Auth::$user->account_alias];
-        $this->data['platform']['domain'] = 'https://thyssen24.ru';
+        //$this->data['platform']['en_alias'] = Auth::$user->account_alias;
+        //$this->data['platform']['ru_alias'] = $accounts[Auth::$user->account_alias];
+        $this->data['domain'] = 'https://' . $_SERVER['HTTP_HOST'];
+
         return $this;
     }
 

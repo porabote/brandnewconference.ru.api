@@ -32,6 +32,16 @@ class FilesController extends Controller
                 'meta' => []
             ]);
 
+        } elseif(isset($data['file'])) {
+            $File = $data['file'];
+            unset($data['file']);
+
+            $file = $this->uploadFile($File, $data);
+
+            return response()->json([
+                'data' => $file,
+                'meta' => []
+            ]);
         }
 
     }

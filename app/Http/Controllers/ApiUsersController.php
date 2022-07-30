@@ -17,10 +17,10 @@ class ApiUsersController extends Controller
     {
         $users = Users::leftJoin('posts', 'users.post_id', '=', 'posts.id')
             ->select([
-                '*',
-                'users.id as id',
-                'users.name as name',
-                'posts.name as post_name',
+                    '*',
+                    'users.id as id',
+                    'users.name as name',
+                    'posts.name as post_name',
                 ]
             )
             ->get()
@@ -55,7 +55,7 @@ class ApiUsersController extends Controller
             ]);
             return $user->getAttributes();
         } else {
-            return (array) $userApi;
+            return (array)$userApi;
         }
     }
 
@@ -73,9 +73,13 @@ class ApiUsersController extends Controller
     function checkEditAccess()
     {
         $isCanEdit = AccessLists::_check(11);
+        $isCanViewTabs = AccessLists::_check(12);
 
         return response()->json([
-            'data' => ['isCanEdit' => $isCanEdit],
+            'data' => [
+                'isCanEdit' => $isCanEdit,
+                'isCanViewTabs' => $isCanViewTabs,
+            ],
             'meta' => []
         ]);
     }
