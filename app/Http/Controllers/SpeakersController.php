@@ -59,4 +59,25 @@ class SpeakersController extends Controller
         ]);
     }
 
+    function resort($request)
+    {
+        $data = $request->all();
+       // debug($data);
+        $record = Speakers::where('lft', $data['lft'])->get()->first();
+        
+        if ($data['delta'] > 0) {
+            $bool = $record->down($data['delta']);
+        } else {
+            $bool = $record->up(abs($data['delta']));
+        }
+
+        $record->save();
+
+        return response()->json([
+            'data' => $record->toArray(),
+            'meta' => []
+        ]);
+
+    }
+
 }

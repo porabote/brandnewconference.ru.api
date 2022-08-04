@@ -36,7 +36,7 @@ class Tickets extends Model
     public function comments()
     {
         return $this->hasMany(Comment::class, 'record_id', 'id' )
-            ->where('class_name', '=', 'tickets')
+            ->where('class_name', '=', 'TicketsRequests')
             ->orderBy('parent_id')
             ->orderByDesc('id');
     }
