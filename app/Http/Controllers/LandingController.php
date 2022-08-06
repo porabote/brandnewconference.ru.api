@@ -7,6 +7,7 @@ use App\Http\Components\Mailer\Message;
 use Porabote\Auth\Auth;
 use Porabote\FullRestApi\Server\ApiTrait;
 use App\Models\Speakers;
+use App\Models\Hashes;
 use App\Models\Faq;
 use App\Models\Consumers;
 use App\Exceptions\ApiException;
@@ -26,8 +27,19 @@ class LandingController extends Controller
         ];
     }
 
-    function get()
+    function get($request)
     {
+
+        $data = $request->all();
+
+        $hash = null;
+        if ($request->input('userId')) {
+            $hash = Hashes::where('hash', $request->input('userId'))->get()->first();
+            if($hash) {
+                $hash = $hash->toArray();
+            }
+        }
+
         $speakers = Speakers::orderBy('lft')->with('avatar')->get();
         $faqs = Faq::orderBy('lft')->get();
 
@@ -35,6 +47,7 @@ class LandingController extends Controller
             'data' => [
                 'speakers' => $speakers,
                 'faqs' => $faqs,
+                'hash' => $hash,
             ],
             'meta' => []
         ]);
@@ -45,6 +58,10 @@ class LandingController extends Controller
         try {
             $data = $request->all();
 
+            if (!$request->input('accept')) {
+                throw new ApiException('Пожалуйста, укажите согласие на обработку персональных данных.');
+            }
+
             foreach (Consumers::$requiredFields as $requiredField) {
                 if (!isset($data[$requiredField])) {
                     throw new ApiException('Пожалуйста, заполните все обязательные поля.');
@@ -52,15 +69,24 @@ class LandingController extends Controller
             }
 
             $consumer = Consumers::where('email', $data['email'])->get()->first();
-            if ($consumer) {
-                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
-            }
+//            if ($consumer) {
+//                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
+//            }
 
             $newConsumer = Consumers::create($data);
 
             $message = new Message();
 
             $letterId = ($newConsumer->part_type == 'online') ? 28 : 29;
+            if ($newConsumer->part_type == 'offline' && !empty($request->input('user_id'))) {
+                $letterId = 32;
+            }
+
+            if (!empty($request->input('user_id'))) {
+                $hashRecord = Hashes::where('hash', $request->input('user_id'))->get()->first();
+                $hashRecord->hash = '';
+                $hashRecord->update();
+            }
 
             $message->setData([])->setTemplateById($letterId);
             Mailer::setTo($newConsumer->email);

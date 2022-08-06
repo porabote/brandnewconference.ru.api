@@ -8,11 +8,21 @@ use Porabote\FullRestApi\Server\ApiTrait;
 use Porabote\Uploader\Uploader;
 use App\Http\Components\Mailer\Mailer;
 use App\Http\Components\Mailer\Message;
+use App\Models\Hashes;
 
 class ConsumersController extends Controller
 {
     use ApiTrait;
 
+    static $authAllows;
+    private $authData = [];
+
+    function __construct()
+    {
+        self::$authAllows = [
+            'importHashes',
+        ];
+    }
 
     function acceptPart($request)
     {
@@ -45,6 +55,7 @@ class ConsumersController extends Controller
 
         $consumer = Consumers::find($data['id']);
         $consumer->status = 'declined';
+        $consumer->part_type = 'online';
         $consumer->update();
 
         $message = new Message();
@@ -57,6 +68,22 @@ class ConsumersController extends Controller
             'data' => $consumer->toArray(),
             'meta' => []
         ]);
+    }
+
+    function importHashes()
+    {
+        $path = '/var/www/porabote/data/www/brandnewconference.ru.api/storage/import/members.xlsx';
+
+        $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($path);
+        $sheet = $spreadsheet->getActiveSheet();
+        $countRow = $sheet->getHighestRow();
+
+        for ($i = 2; $i <= $countRow; $i++) {
+            Hashes::create([
+                'hash' => $sheet->getCell('A' . $i)->getValue(),
+                'part_format' => $sheet->getCell('B' . $i)->getValue(),
+            ]);
+        }
     }
 
 //    function create(Request $request)
