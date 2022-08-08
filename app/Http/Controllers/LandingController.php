@@ -68,24 +68,40 @@ class LandingController extends Controller
                 }
             }
 
+            if (!empty($request->input('user_id'))) {
+                $hashRecord = Hashes::where('hash', $request->input('user_id'))->get()->first();
+                $hashRecord->hash = '';
+                $hashRecord->update();
+            }
+            
             $consumer = Consumers::where('email', $data['email'])->get()->first();
 //            if ($consumer) {
 //                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
 //            }
 
+            //            if ($consumer) {
+//                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
+//            }
+            
             $newConsumer = Consumers::create($data);
 
             $message = new Message();
 
             $letterId = ($newConsumer->part_type == 'online') ? 28 : 29;
-            if ($newConsumer->part_type == 'offline' && !empty($request->input('user_id'))) {
+            if (
+                $newConsumer->part_type == 'offline'
+                && !empty($request->input('user_id'))
+                && isset($hashRecord->part_format)
+                && $hashRecord->part_format == 'offline'
+            ) {
                 $letterId = 32;
+                $newConsumer->status = 'accepted';
+                $newConsumer->update();
             }
 
-            if (!empty($request->input('user_id'))) {
-                $hashRecord = Hashes::where('hash', $request->input('user_id'))->get()->first();
-                $hashRecord->hash = '';
-                $hashRecord->update();
+            if ($newConsumer->part_type == 'online') {
+                $newConsumer->status = 'accepted';
+                $newConsumer->update();
             }
 
             $message->setData([])->setTemplateById($letterId);

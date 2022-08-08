@@ -78,7 +78,7 @@ class ConsumersController extends Controller
         $sheet = $spreadsheet->getActiveSheet();
         $countRow = $sheet->getHighestRow();
 
-        for ($i = 2; $i <= $countRow; $i++) {
+        for ($i = 1; $i <= $countRow; $i++) {
             Hashes::create([
                 'hash' => $sheet->getCell('A' . $i)->getValue(),
                 'part_format' => $sheet->getCell('B' . $i)->getValue(),
