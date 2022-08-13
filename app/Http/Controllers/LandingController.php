@@ -10,6 +10,7 @@ use App\Models\Speakers;
 use App\Models\Hashes;
 use App\Models\Faq;
 use App\Models\Consumers;
+use App\Models\Feedbacks;
 use App\Exceptions\ApiException;
 
 class LandingController extends Controller
@@ -24,6 +25,7 @@ class LandingController extends Controller
         self::$authAllows = [
             'get',
             'registration',
+            'createQuestion',
         ];
     }
 
@@ -68,6 +70,10 @@ class LandingController extends Controller
                 }
             }
 
+            if (!filter_var($request->input('email'), FILTER_VALIDATE_EMAIL)) {
+                throw new ApiException('Пожалуйста, проверьте формат электронного адреса.');
+            }
+
             if (!empty($request->input('user_id'))) {
                 $hashRecord = Hashes::where('hash', $request->input('user_id'))->get()->first();
                 $hashRecord->hash = '';
@@ -76,10 +82,6 @@ class LandingController extends Controller
             
             $consumer = Consumers::where('email', $data['email'])->get()->first();
 //            if ($consumer) {
-//                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
-//            }
-
-            //            if ($consumer) {
 //                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
 //            }
             
@@ -119,5 +121,17 @@ class LandingController extends Controller
         } catch (ApiException $e) {
             $e->toJSON();
         }
+    }
+
+    function createQuestion($request)
+    {
+        $data = $request->all();
+
+        Feedbacks::create($data);
+  
+        return response()->json([
+            'data' => $data,
+            'meta' => []
+        ]);
     }
 }

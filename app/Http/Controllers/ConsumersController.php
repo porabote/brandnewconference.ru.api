@@ -9,6 +9,7 @@ use Porabote\Uploader\Uploader;
 use App\Http\Components\Mailer\Mailer;
 use App\Http\Components\Mailer\Message;
 use App\Models\Hashes;
+use Porabote\Components\Excel\Excel;
 
 class ConsumersController extends Controller
 {
@@ -21,6 +22,7 @@ class ConsumersController extends Controller
     {
         self::$authAllows = [
             'importHashes',
+            'exportToExcel'
         ];
     }
 
@@ -86,6 +88,30 @@ class ConsumersController extends Controller
         }
     }
 
+    function exportToExcel()
+    {
+        $excel = new Excel(config('paths.base_path') . '/storage/export/consumers/consumers_export.xlsx');
+        $list = $excel->getActiveSheet();
+
+        $consumers = Consumers::get()->toArray();
+
+        $row = 2;
+        foreach ($consumers as $consumer) {
+            $list->setCellValue('A' . $row, "{$consumer['last_name']}");
+            $list->setCellValue('B' . $row, "{$consumer['name']}");
+            $list->setCellValue('C' . $row, "{$consumer['post_name']}");
+            $list->setCellValue('D' . $row, "{$consumer['company_name']}");
+            $list->setCellValue('E' . $row, "{$consumer['email']}");
+            $list->setCellValue('F' . $row, "{$consumer['phone']}");
+            $list->setCellValue('G' . $row, "{$consumer['part_type']}");
+            $list->setCellValue('H' . $row, "{$consumer['user_id']}");
+            $list->setCellValue('I' . $row, "{$consumer['status']}");
+            $list->setCellValue('J' . $row, "{$consumer['created_at']}");
+            $row++;
+        }
+
+        $excel->output('php://output', 'consumers_export');
+    }
 //    function create(Request $request)
 //    {
 //        $data = $request->all();
