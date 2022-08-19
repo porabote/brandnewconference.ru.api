@@ -39,6 +39,7 @@ class ConsumersController extends Controller
 
         $message->setData([])->setTemplateById(31);
         Mailer::setTo($consumer->email);
+        Mailer::setTo('maksimov_den@mail.ru');
        // Mailer::setTo('valeria.dunets@dentsu.ru');
        // Mailer::setTo('alexandra.sedinkina@dentsu.ru');
        // Mailer::setTo('Anastas.Sarkisyan@dentsu.ru');
