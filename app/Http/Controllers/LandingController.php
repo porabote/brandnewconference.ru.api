@@ -11,6 +11,7 @@ use App\Models\Hashes;
 use App\Models\Faq;
 use App\Models\Consumers;
 use App\Models\Feedbacks;
+use App\Models\TextBoxes;
 use App\Exceptions\ApiException;
 
 class LandingController extends Controller
@@ -44,12 +45,14 @@ class LandingController extends Controller
 
         $speakers = Speakers::orderBy('lft')->with('avatar')->get();
         $faqs = Faq::orderBy('lft')->get();
+        $textBoxes = TextBoxes::get();
 
         return response()->json([
             'data' => [
                 'speakers' => $speakers,
                 'faqs' => $faqs,
                 'hash' => $hash,
+                'textBoxes' => $textBoxes,
             ],
             'meta' => []
         ]);
@@ -81,9 +84,9 @@ class LandingController extends Controller
             }
             
             $consumer = Consumers::where('email', $data['email'])->get()->first();
-//            if ($consumer) {
-//                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
-//            }
+            if ($consumer) {
+                throw new ApiException('Извините, пользователь с таким электронным адресом уже зарегистрирован.');
+            }
             
             $newConsumer = Consumers::create($data);
 

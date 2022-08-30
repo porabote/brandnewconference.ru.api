@@ -64,11 +64,13 @@ class SpeakersController extends Controller
         $data = $request->all();
        // debug($data);
         $record = Speakers::where('lft', $data['lft'])->get()->first();
-        
-        if ($data['delta'] > 0) {
-            $bool = $record->down($data['delta']);
-        } else {
+       // $record::fixTree();exit();
+      //  echo $data['delta'];
+
+        if ($data['delta'] < 0) {
             $bool = $record->up(abs($data['delta']));
+        } else if ($data['delta'] > 0) {
+            $bool = $record->down(abs($data['delta']));
         }
 
         $record->save();

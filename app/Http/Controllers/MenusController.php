@@ -40,6 +40,23 @@ class MenusController extends Controller
 
     }
 
+    function edit($request)
+    {
+        $data = $request->all();
+
+        $record = Menus::find($data['id']);
+
+        foreach ($data as $field => $value) {
+            if (array_key_exists($field, $record->getAttributes())) $record->$field = $value;
+        }
+
+        $record->update();
+
+        return response()->json([
+            'data' => $record,
+            'meta' => []
+        ]);
+    }
 //    function get()
 //    {
 //        $tree = $this->getDepth();
