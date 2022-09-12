@@ -20,4 +20,11 @@ class Timings extends Model
         "lft",
         "rght",
     ];
+
+    public function children()
+    {
+        return $this->hasMany(Timings::class, 'parent_id', 'id' )
+            ->orderByDesc('id');
+    }
+
 }

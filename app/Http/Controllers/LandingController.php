@@ -12,6 +12,7 @@ use App\Models\Faq;
 use App\Models\Consumers;
 use App\Models\Feedbacks;
 use App\Models\TextBoxes;
+use App\Models\Partners;
 use App\Exceptions\ApiException;
 
 class LandingController extends Controller
@@ -46,6 +47,7 @@ class LandingController extends Controller
         $speakers = Speakers::orderBy('lft')->with('avatar')->get();
         $faqs = Faq::orderBy('lft')->get();
         $textBoxes = TextBoxes::get();
+        $partners = Partners::with('avatar')->get();
 
         return response()->json([
             'data' => [
@@ -53,6 +55,7 @@ class LandingController extends Controller
                 'faqs' => $faqs,
                 'hash' => $hash,
                 'textBoxes' => $textBoxes,
+                'partners' => $partners,
             ],
             'meta' => []
         ]);

@@ -15,13 +15,9 @@ class TimingsController extends Controller
     {
         $data = $request->all();
 
-        if (!isset($data['id'])) {
-            $record = Timings::create($data);
+        $this->setDatetimesRange($data);
 
-        } else {
-            $record = Timings::find($data['id']);
-            $record->update();
-        }
+        $record = Timings::create($data);
 
         return response()->json([
             'data' => $record,
@@ -32,6 +28,8 @@ class TimingsController extends Controller
     function edit($request)
     {
         $data = $request->all();
+
+        $this->setDatetimesRange($data);
 
         $record = Timings::find($data['id']);
 
@@ -45,5 +43,20 @@ class TimingsController extends Controller
             'data' => $record,
             'meta' => []
         ]);
+    }
+
+    function setDatetimesRange(&$data)
+    {
+        $timeRangeParts = explode('-', $data['time_range']);
+        $timeFrom = explode(':', $timeRangeParts[0]);
+        $timeTo = explode(':', $timeRangeParts[1]);
+
+        $dateFrom = new \DateTime($data['date']);
+        $dateFrom->setTime($timeFrom[0], $timeFrom[1]);
+        $data['datetime_from'] = $dateFrom;
+
+        $dateTo = new \DateTime($data['date']);
+        $dateTo->setTime($timeTo[0], $timeTo[1]);
+        $data['datetime_to'] = $dateTo;
     }
 }
