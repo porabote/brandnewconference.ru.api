@@ -2,16 +2,17 @@
 
 namespace App\Models;
 
+use App\Observers\AuthObserver;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class MailsPatterns extends Model
+class SpeakersTopics extends Model
 {
-    use HasFactory;
-
+    public $timestamps = false;
+    
     protected $fillable = [
-        'description',
-        'subject',
-        'body',
+        "speakers_id",
+        "timings_topics_id",
     ];
+
 }

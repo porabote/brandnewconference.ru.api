@@ -72,7 +72,7 @@ class Mailer
         }
     }
 
-    function clearTo()
+    static function clearTo()
     {
         self::$recipients = [];
     }
@@ -100,11 +100,11 @@ class Mailer
             }
 
             if (self::$mail->send()) {
-
+                self::clearTo();
                 return true;
 
             } else {
-
+                self::clearTo();
             }
 
         } catch (Exception $e)

@@ -4,23 +4,92 @@ namespace App\Http\Controllers;
 
 use App\Http\Components\Mailer\Mailer;
 use App\Http\Components\Mailer\Message;
+use App\Models\Consumers;
 
 class MailerController extends Controller
 {
 
-    function sendTest()
+    static $authAllows;
+    private $authData = [];
+
+    function __construct()
     {
+        self::$authAllows = [
+            'sendAboutTimingsOnline',
+            'sendAboutTimingsOffline'
+        ];
+    }
+
+    function sendAboutTimingsOnline()
+    {
+
+//        $consumers = Consumers::where('part_type', 'online')->get();
+//        $emails = [];
+//        foreach ($consumers as $consumer) {
+//            $emails[][] = $consumer['email'];
+//        }
+//        debug(count($emails));
+//        debug($emails);
+//exit();
+        $emails = [
+            ['valeria.dunets@dentsu.ru'],
+            ['faithix9@gmail.com'],
+            ['valeria.dunets@yandex.ru'],
+            ['anastas.sarkisyan@dentsu.ru'],
+            ['anastassarkisyan@gmail.com'],
+            ['sedinkina.a@gmail.com'],
+            ['sedinkina.a.ya@yandex.ru'],
+            ['maksimov_den@mail.ru'],
+            ['maksimov.dev@gmail.com'],
+        ];
+
         $message = new Message();
         $msgData = ['id' => '99'];
         $message
             ->setData($msgData)
-            ->setTemplateById(1);
-        
-        Mailer::setTo([
-                //['Andreev.Nikolaj@ts-gruppe.com'],
-                ['maksimov_den@mail.ru']
-            ]);
-        Mailer::send($message);
+            ->setTemplateById(35);
+
+        foreach ($emails as $email) {
+            Mailer::setTo([$email]);
+            Mailer::send($message);
+            Mailer::clearTo();
+        }
+    }
+
+    function sendAboutTimingsOffline()
+    {
+//        $consumers = Consumers::where('part_type', 'offline')->where('status', 'accepted')->get();
+//        $emails = [];
+//        foreach ($consumers as $consumer) {
+//            $emails[][] = $consumer['email'];
+//        }
+//        debug(count($emails));
+//debug($emails);
+//exit();
+        $emails = [
+            ['maksimov_den@mail.ru'],
+            ['valeria.dunets@dentsu.ru'],
+            ['faithix9@gmail.com'],
+            ['valeria.dunets@yandex.ru'],
+            ['anastas.sarkisyan@dentsu.ru'],
+            ['anastassarkisyan@gmail.com'],
+            ['sedinkina.a@gmail.com'],
+            ['sedinkina.a.ya@yandex.ru'],
+            ['maksimov.dev@gmail.com'],
+        ];
+
+
+        $message = new Message();
+        $msgData = ['id' => '99'];
+        $message
+            ->setData($msgData)
+            ->setTemplateById(34);
+
+        foreach ($emails as $email) {
+            Mailer::setTo([$email]);
+            Mailer::send($message);
+            Mailer::clearTo();
+        }
     }
 
 }

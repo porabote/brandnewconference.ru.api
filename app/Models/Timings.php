@@ -21,10 +21,16 @@ class Timings extends Model
         "rght",
     ];
 
-    public function children()
+    public function subblocks()
     {
         return $this->hasMany(Timings::class, 'parent_id', 'id' )
-            ->orderByDesc('id');
+            ->orderByDesc('lft');
+    }
+
+    public function topics()
+    {
+        return $this->hasMany(TimingsTopics::class, 'timing_id', 'id' )
+            ->orderByDesc('lft');
     }
 
 }

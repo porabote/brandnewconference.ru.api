@@ -13,6 +13,7 @@ use App\Models\Consumers;
 use App\Models\Feedbacks;
 use App\Models\TextBoxes;
 use App\Models\Partners;
+use App\Models\Timings;
 use App\Exceptions\ApiException;
 
 class LandingController extends Controller
@@ -44,10 +45,11 @@ class LandingController extends Controller
             }
         }
 
-        $speakers = Speakers::orderBy('lft')->with('avatar')->get();
+        $speakers = Speakers::orderBy('lft')->where('active_flg', 1)->with('avatar')->get();
         $faqs = Faq::orderBy('lft')->get();
         $textBoxes = TextBoxes::get();
-        $partners = Partners::with('avatar')->get();
+        $partners = Partners::where('active_flg', 1)->with('avatar')->get();
+        $timings = Timings::with('topics.speakers')->get();
 
         return response()->json([
             'data' => [
@@ -56,6 +58,7 @@ class LandingController extends Controller
                 'hash' => $hash,
                 'textBoxes' => $textBoxes,
                 'partners' => $partners,
+                'timings' => $timings,
             ],
             'meta' => []
         ]);

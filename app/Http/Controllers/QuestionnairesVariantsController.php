@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Porabote\FullRestApi\Server\ApiTrait;
-use App\Models\QuestionariesVariants;
+use App\Models\QuestionnairesVariants;
 
-class QuestionariesVariantsController extends Controller
+class QuestionnairesVariantsController extends Controller
 {
     use ApiTrait;
 
@@ -15,10 +15,10 @@ class QuestionariesVariantsController extends Controller
         $data = $request->all();
 
         if (!isset($data['id'])) {
-            $record = QuestionariesVariants::create($data);
+            $record = QuestionnairesVariants::create($data);
 
         } else {
-            $record = QuestionariesVariants::find($data['id']);
+            $record = QuestionnairesVariants::find($data['id']);
             $record->update();
         }
 
@@ -32,7 +32,7 @@ class QuestionariesVariantsController extends Controller
     {
         $data = $request->all();
 
-        $record = QuestionariesVariants::find($data['id']);
+        $record = QuestionnairesVariants::find($data['id']);
 
         foreach ($data as $field => $value) {
             if (array_key_exists($field, $record->getAttributes())) $record->$field = $value;

@@ -11,7 +11,7 @@ class QuestionnairesVariants extends Model
 
     protected $fillable = [
         'questionnaires_id',
-        'title',
+        'name',
     ];
 
     public function getLftName()

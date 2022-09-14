@@ -15,6 +15,24 @@ class MailsPatternsController extends Controller
 {
     use ApiTrait;
 
+    function create(Request $request)
+    {
+        $data = $request->all();
+
+        if (!isset($data['id'])) {
+            $record = MailsPatterns::create($data);
+
+        } else {
+            $record = MailsPatterns::find($data['id']);
+            $record->update();
+        }
+
+        return response()->json([
+            'data' => $record,
+            'meta' => []
+        ]);
+    }
+
     function edit($request)
     {
         $data = $request->all();

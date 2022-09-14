@@ -32,6 +32,8 @@ class PartnersController extends Controller
     {
         $data = $request->all();
 
+        if (!isset($data['active_flg'])) $data['active_flg'] = 0;
+
         $record = Partners::find($data['id']);
 
         foreach ($data as $field => $value) {
