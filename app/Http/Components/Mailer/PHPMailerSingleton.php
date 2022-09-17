@@ -13,7 +13,7 @@ class PHPMailerSingleton {
     static function getInstance()
     {
         if (!self::$instance) {
-            self::$instance = new \PHPMailer\PHPMailer\PHPMailer();
+            self::$instance = new \PHPMailer\PHPMailer\PHPMailer(true);
             self::setDefaultParams();
         }
         return self::$instance;

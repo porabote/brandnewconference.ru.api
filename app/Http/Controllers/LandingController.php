@@ -14,6 +14,9 @@ use App\Models\Feedbacks;
 use App\Models\TextBoxes;
 use App\Models\Partners;
 use App\Models\Timings;
+use App\Models\Questionnaires;
+use App\Models\QuestionnairesVariants;
+use App\Models\QuestionnairesVariantsLogs;
 use App\Exceptions\ApiException;
 
 class LandingController extends Controller
@@ -29,6 +32,7 @@ class LandingController extends Controller
             'get',
             'registration',
             'createQuestion',
+            'vote',
         ];
     }
 
@@ -48,8 +52,9 @@ class LandingController extends Controller
         $speakers = Speakers::orderBy('lft')->where('active_flg', 1)->with('avatar')->get();
         $faqs = Faq::orderBy('lft')->get();
         $textBoxes = TextBoxes::get();
-        $partners = Partners::where('active_flg', 1)->with('avatar')->get();
+        $partners = Partners::orderBy('lft')->where('active_flg', 1)->with('avatar')->get();
         $timings = Timings::with('topics.speakers')->get();
+        $questionnaires = Questionnaires::with('variants')->get();
 
         return response()->json([
             'data' => [
@@ -59,6 +64,7 @@ class LandingController extends Controller
                 'textBoxes' => $textBoxes,
                 'partners' => $partners,
                 'timings' => $timings,
+                'questionnaires' => $questionnaires,
             ],
             'meta' => []
         ]);
@@ -142,5 +148,28 @@ class LandingController extends Controller
             'data' => $data,
             'meta' => []
         ]);
+    }
+
+    function vote($request)
+    {
+        $data = $request->all();
+
+        if (!isset($data['variant_id'])) return;
+
+        $variant = QuestionnairesVariants::find($data['variant_id']);
+        if($variant) {
+            $variant->score++;
+            $variant->save();
+
+//            QuestionnairesVariantsLogs::create([
+//                'ip' => $_SERVER['REMOTE_ADDR'],
+//                'questionnaires_id' => $variant->questionnaires_id,
+//            ]);
+
+            return response()->json([
+                'data' => [],
+                'meta' => []
+            ]);
+        }
     }
 }

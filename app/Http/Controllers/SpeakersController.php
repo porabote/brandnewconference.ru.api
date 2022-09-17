@@ -62,10 +62,9 @@ class SpeakersController extends Controller
     function resort($request)
     {
         $data = $request->all();
-       // debug($data);
+
         $record = Speakers::where('lft', $data['lft'])->get()->first();
        // $record::fixTree();exit();
-      //  echo $data['delta'];
 
         if ($data['delta'] < 0) {
             $bool = $record->up(abs($data['delta']));

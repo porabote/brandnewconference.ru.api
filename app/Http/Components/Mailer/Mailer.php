@@ -82,7 +82,7 @@ class Mailer
         try {
 
             self::$mail = PHPMailerSingleton::getInstance();
-
+           // self::$mail->SMTPDebug = 2;
             # Кому
             self::$mail->clearAllRecipients();
             foreach (self::$recipients as $recipient) {

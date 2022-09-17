@@ -47,4 +47,26 @@ class PartnersController extends Controller
             'meta' => []
         ]);
     }
+
+    function resort($request)
+    {
+        $data = $request->all();
+
+        $record = Partners::where('lft', $data['lft'])->get()->first();
+        // $record::fixTree();exit();
+
+        if ($data['delta'] < 0) {
+            $bool = $record->up(abs($data['delta']));
+        } else if ($data['delta'] > 0) {
+            $bool = $record->down(abs($data['delta']));
+        }
+
+        $record->save();
+
+        return response()->json([
+            'data' => $record->toArray(),
+            'meta' => []
+        ]);
+
+    }
 }
