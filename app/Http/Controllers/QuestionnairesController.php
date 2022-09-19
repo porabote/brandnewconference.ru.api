@@ -45,4 +45,20 @@ class QuestionnairesController extends Controller
             'meta' => []
         ]);
     }
+
+    function saveActives($request)
+    {
+        $data = $request->all();
+
+        $questions = Questionnaires::get();
+
+        foreach ($questions as $question) {
+            $question->active_flg = isset($data['questions'][$question->id]) ? 1 : 0;
+            $question->save();
+        }
+        return response()->json([
+            'data' => [],
+            'meta' => []
+        ]);
+    }
 }
