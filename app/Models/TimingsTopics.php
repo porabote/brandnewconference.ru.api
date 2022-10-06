@@ -14,6 +14,7 @@ class TimingsTopics extends Model
         "timing_id",
         "datetime_from",
         "datetime_to",
+        "start_from",
     ];
 
     public function speakers()

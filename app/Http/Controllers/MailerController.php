@@ -233,20 +233,20 @@ debug($consumer['email'] . ' -- ' . $consumer['qr_file_path']);
         foreach ($consumers as $consumer) {
             $emails[][] = $consumer['email'];
         }
-        debug(count($emails));
-        exit();
+//        debug(count($emails));
+//        exit();
 
-        $emails = [
-            ['maksimov_den@mail.ru'],
-            ['valeria.dunets@dentsu.ru'],
-            ['faithix9@gmail.com'],
-            ['valeria.dunets@yandex.ru'],
-            ['anastas.sarkisyan@dentsu.ru'],
-            ['anastassarkisyan@gmail.com'],
-            ['sedinkina.a@gmail.com'],
-            ['sedinkina.a.ya@yandex.ru'],
-            ['maksimov.dev@gmail.com'],
-        ];
+//        $emails = [
+//            ['maksimov_den@mail.ru'],
+//            ['valeria.dunets@dentsu.ru'],
+//            ['faithix9@gmail.com'],
+//            ['valeria.dunets@yandex.ru'],
+//            ['anastas.sarkisyan@dentsu.ru'],
+//            ['anastassarkisyan@gmail.com'],
+//            ['sedinkina.a@gmail.com'],
+//            ['sedinkina.a.ya@yandex.ru'],
+//            ['maksimov.dev@gmail.com'],
+//        ];
 
         $message = new Message();
         $msgData = [];
@@ -256,33 +256,33 @@ debug($consumer['email'] . ' -- ' . $consumer['qr_file_path']);
 
         foreach ($emails as $email) {
             Mailer::setTo([$email]);
-           // Mailer::send($message);
+            //Mailer::send($message);
             Mailer::clearTo();
         }
     }
 
     function sendHourBeforeOffline()
     {
-        $consumers = Consumers::whereNotNull('qr_file_path')->where('status', 'accepted')->limit(3)->get()->toArray();
+        $consumers = Consumers::whereNotNull('qr_file_path')->where('status', 'accepted')->get()->toArray();
         $emails = [];
         foreach ($consumers as $consumer) {
             $emails[][] = $consumer['email'];
         }
         debug(count($emails));
-//        exit();
+        exit();
 
 
-        $emails = [
-            ['maksimov_den@mail.ru'],
-            ['valeria.dunets@dentsu.ru'],
-            ['faithix9@gmail.com'],
-            ['valeria.dunets@yandex.ru'],
-            ['anastas.sarkisyan@dentsu.ru'],
-            ['anastassarkisyan@gmail.com'],
-            ['sedinkina.a@gmail.com'],
-            ['sedinkina.a.ya@yandex.ru'],
-            ['maksimov.dev@gmail.com'],
-        ];
+//        $emails = [
+//            ['maksimov_den@mail.ru'],
+//            ['valeria.dunets@dentsu.ru'],
+//            ['faithix9@gmail.com'],
+//            ['valeria.dunets@yandex.ru'],
+//            ['anastas.sarkisyan@dentsu.ru'],
+//            ['anastassarkisyan@gmail.com'],
+//            ['sedinkina.a@gmail.com'],
+//            ['sedinkina.a.ya@yandex.ru'],
+//            ['maksimov.dev@gmail.com'],
+//        ];
 
         foreach ($consumers as $consumer) {
 
@@ -296,8 +296,8 @@ debug($consumer['email'] . ' -- ' . $consumer['qr_file_path']);
                 ->setTemplateById(37);
 
             $email = $consumer['email'];
-
-            Mailer::setTo([['maksimov_den@mail.ru']]);
+debug($email);
+            Mailer::setTo([[$email]]);
           //  Mailer::send($message);
             Mailer::clearTo();
         }
